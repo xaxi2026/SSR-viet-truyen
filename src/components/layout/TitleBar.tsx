@@ -326,7 +326,7 @@ export default function TitleBar() {
           style={{ minHeight: 24, padding: '0 7px' }}
         >
           <Languages size={13} strokeWidth={1.5} />
-          <span>{locale === 'zh-CN' ? 'EN' : locale === 'en-US' ? 'VI' : '中文'}</span>
+          <span>{locale === 'zh-CN' ? 'EN' : '中文'}</span>
         </button>
         <button
           onClick={() => openSettings()}
