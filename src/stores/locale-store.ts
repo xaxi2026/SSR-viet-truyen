@@ -68,7 +68,7 @@ export function createLocaleState(dependencies: LocaleDependencies): StateCreato
         }
       },
       async toggleLocale() {
-        await get().setLocale(get().locale === 'zh-CN' ? 'en-US' : get().locale === 'en-US' ? 'vi-VN' : 'zh-CN')
+        await get().setLocale(get().locale === 'zh-CN' ? 'en-US' : 'zh-CN')
       },
     }
   }
