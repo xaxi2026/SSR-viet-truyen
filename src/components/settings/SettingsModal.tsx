@@ -1297,7 +1297,7 @@ function EditorSection() {
           onChange={(event) => void setLocale(event.target.value as Locale)}
         >
           <option value="zh-CN">{text('简体中文', 'Simplified Chinese')}</option>
-          <option value="en-US">English</option>
+          <option value="en-US">{text('英语', 'English')}</option>
           <option value="vi-VN">Tiếng Việt</option>
         </NativeSelect>
       </div>

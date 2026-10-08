@@ -2,6 +2,7 @@ import { enUS, type MessageKey } from './messages/en-US'
 import { zhCN } from './messages/zh-CN'
 import { viVN } from './messages/vi-VN'
 import { viInline } from './vi-inline'
+import { viSettings } from './vi-settings'
 import type { Locale, MessageParams } from './types'
 
 type Catalog = Record<string, string>
@@ -43,7 +44,7 @@ export function localize(
 ): string {
   const template = locale === 'zh-CN'
     ? zhCNText
-    : locale === 'vi-VN' ? (viInline[enUSText] ?? enUSText) : enUSText
+    : locale === 'vi-VN' ? (viSettings[enUSText] ?? viInline[enUSText] ?? enUSText) : enUSText
   return interpolate(template, params)
 }
 
