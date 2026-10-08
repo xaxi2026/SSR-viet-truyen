@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "feature": "chatgpt_batch_writing",
+  "status": "proposed_not_executed",
+  "batch": {
+    "startChapter": 101,
+    "chapterCount": 10,
+    "endChapter": 110,
+    "targetVisibleWordsPerChapter": 2500,
+    "writingLanguage": "vi-VN",
+    "authoringProvider": "chatgpt_interactive",
+    "completionMode": "draft_review",
+    "groupSize": 2,
+    "sceneChunkTargetMin": 600,
+    "sceneChunkTargetMax": 900,
+    "lengthSoftMinimumFraction": 0.9,
+    "lengthSoftMaximumFraction": 1.1,
+    "checkpointPolicy": "after_every_durable_scene_draft_review",
+    "requiresAuthorApproval": true,
+    "autoFinalize": false
+  },
+  "prerequisites": {
+    "projectId": "must_be_supplied_by_open_project",
+    "canonicalChapter100": "must_be_verified",
+    "blueprints101to110": "must_be_verified",
+    "existingDraftCollision": "block_or_explicit_revision_branch"
+  }
+}
