@@ -1,6 +1,5 @@
 import { enUS, type MessageKey } from './messages/en-US'
 import { zhCN } from './messages/zh-CN'
-import { viVN } from './messages/vi-VN'
 import type { Locale, MessageParams } from './types'
 
 type Catalog = Record<string, string>
@@ -8,18 +7,15 @@ type Catalog = Record<string, string>
 export const messages: Record<Locale, Catalog> = {
   'en-US': enUS,
   'zh-CN': zhCN,
-  'vi-VN': viVN,
 }
 
 export function resolveLocale(input?: string | null): Locale {
-  const normalized = input?.toLowerCase() ?? ''
-  if (normalized.startsWith('vi')) return 'vi-VN'
-  return normalized.startsWith('zh') ? 'zh-CN' : 'en-US'
+  return input?.toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-US'
 }
 
-export function createTranslator(catalogs: Partial<Record<Locale, Catalog>> & { 'en-US': Catalog }) {
+export function createTranslator(catalogs: Record<Locale, Catalog>) {
   return (locale: Locale, key: string, params: MessageParams = {}): string => {
-    const template = catalogs[locale]?.[key] ?? catalogs['en-US'][key] ?? key
+    const template = catalogs[locale][key] ?? catalogs['en-US'][key] ?? key
     return template.replace(/\{(\w+)\}/g, (_, name: string) => String(params[name] ?? `{${name}}`))
   }
 }
