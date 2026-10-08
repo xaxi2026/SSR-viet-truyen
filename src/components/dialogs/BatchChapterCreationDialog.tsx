@@ -1,3 +1,4 @@
+import { legacyUiLocale } from '../../i18n/core'
 import { useEffect, useState } from 'react'
 import { AlertCircle, AlertTriangle, BookOpen, Loader2, Play } from 'lucide-react'
 import { useProjectStore } from '../../stores/project-store'
@@ -123,7 +124,7 @@ function BatchChapterCreationDialogSession({ isOpen, startChapterNumber, onClose
     const loadAuthority = async () => {
       setAuthorityLoading(true)
       try {
-        const nextChapter = await readAuthoritativeNextChapter(projectSession, locale)
+        const nextChapter = await readAuthoritativeNextChapter(projectSession, legacyUiLocale(locale))
         if (disposed || !isProjectSessionCurrent(projectSession)) return
         setAuthoritativeStart(nextChapter)
         setAuthorityError(null)
@@ -169,7 +170,7 @@ function BatchChapterCreationDialogSession({ isOpen, startChapterNumber, onClose
     }
     setStarting(true)
     try {
-      const frozenStart = await readAuthoritativeNextChapter(projectSession, locale)
+      const frozenStart = await readAuthoritativeNextChapter(projectSession, legacyUiLocale(locale))
       if (!isProjectSessionCurrent(projectSession)) return
       setAuthoritativeStart(frozenStart)
       setAuthorityError(null)

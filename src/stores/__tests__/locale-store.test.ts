@@ -3,6 +3,28 @@ import { describe, expect, it, vi } from 'vitest'
 import { createLocaleState } from '../locale-store'
 
 describe('locale store', () => {
+  it('restores Vietnamese and cycles through all three UI languages', async () => {
+    const saveLocale = vi.fn(async () => ({ success: true }))
+    const setDocumentLanguage = vi.fn()
+    const state = createStore(createLocaleState({
+      loadConfig: async () => ({ locale: 'vi-VN' }),
+      saveLocale,
+      systemLocale: () => 'en-US',
+      setDocumentLanguage,
+    }))
+    await state.getState().init()
+    expect(state.getState().locale).toBe('vi-VN')
+    expect(state.getState().t('common.open')).toBe('Mở')
+    await state.getState().toggleLocale()
+    expect(state.getState().locale).toBe('zh-CN')
+    await state.getState().toggleLocale()
+    expect(state.getState().locale).toBe('en-US')
+    await state.getState().toggleLocale()
+    expect(state.getState().locale).toBe('vi-VN')
+    expect(saveLocale).toHaveBeenLastCalledWith('vi-VN')
+    expect(setDocumentLanguage).toHaveBeenLastCalledWith('vi-VN')
+  })
+
   it('prefers a saved locale over the operating-system locale', async () => {
     const state = createStore(createLocaleState({
       loadConfig: async () => ({ locale: 'zh-CN' }),

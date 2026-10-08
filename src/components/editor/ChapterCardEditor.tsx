@@ -1,3 +1,4 @@
+import { legacyUiLocale } from '../../i18n/core'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Save, BookOpen, RefreshCw, Plus, Trash2,
@@ -277,7 +278,7 @@ export default function ChapterCardEditor({
       const data = restored.blueprints
       if (data.length > 0) setSelectedIdx(0)
       try {
-        const nextChapter = await readAuthoritativeNextChapter(projectSession, locale)
+        const nextChapter = await readAuthoritativeNextChapter(projectSession, legacyUiLocale(locale))
         if (!isLatestProjectRequest()) return
         setAuthorityError(null)
         setLegacyImportedTextRecoveryChapter(null)

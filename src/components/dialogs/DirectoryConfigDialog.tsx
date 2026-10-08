@@ -1,3 +1,4 @@
+import { legacyUiLocale } from '../../i18n/core'
 import { useEffect, useState } from 'react'
 import { FileText, RotateCcw } from 'lucide-react'
 import type { BlueprintCharacterSyncOperation } from '../../../electron/repositories/blueprint-repository'
@@ -137,7 +138,7 @@ export default function DirectoryConfigDialog({ isOpen, onClose, existingCount, 
       setAuthorityLoading(true)
       try {
         const [nextChapter, highestBlueprint] = await Promise.all([
-          readAuthoritativeNextChapter(projectSession, locale),
+          readAuthoritativeNextChapter(projectSession, legacyUiLocale(locale)),
           readHighestBlueprintChapter(currentProject.path, projectSession),
         ])
         if (disposed || !isProjectSessionCurrent(projectSession)) return
@@ -224,7 +225,7 @@ export default function DirectoryConfigDialog({ isOpen, onClose, existingCount, 
     let frozenHighestBlueprint: number
     try {
       const authority = await Promise.all([
-        readAuthoritativeNextChapter(projectSession, locale),
+        readAuthoritativeNextChapter(projectSession, legacyUiLocale(locale)),
         readHighestBlueprintChapter(currentProject.path, projectSession),
       ])
       frozenAuthoritativeNext = authority[0]

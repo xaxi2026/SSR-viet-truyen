@@ -1,3 +1,4 @@
+import { legacyUiLocale } from '../../i18n/core'
 /**
  * Agent 智能上下文构建器
  *
@@ -46,7 +47,7 @@ export async function buildAgentSystemPrompt(
   const writingLanguage = executionContext?.writingLanguage
     ?? (currentProject
       ? resolveWritingLanguage(currentProject.novelConfig.writingLanguage)
-      : useLocaleStore.getState().locale)
+      : legacyUiLocale(useLocaleStore.getState().locale))
   const canUseProjectTools = executionContext
     ? sameProjectSessionContext(
         executionContext.projectSession,

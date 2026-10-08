@@ -6,10 +6,17 @@ describe('i18n core', () => {
     ['zh-CN', 'zh-CN'],
     ['zh-TW', 'zh-CN'],
     ['en-US', 'en-US'],
+    ['vi-VN', 'vi-VN'],
+    ['vi', 'vi-VN'],
     ['fr-FR', 'en-US'],
     [undefined, 'en-US'],
   ] as const)('resolves %s to %s', (input, expected) => {
     expect(resolveLocale(input)).toBe(expected)
+  })
+
+  it('translates Vietnamese shared messages', () => {
+    expect(translate('vi-VN', 'common.open')).toBe('Mở')
+    expect(translate('vi-VN', 'project.current', { name: 'Thiên Mệnh' })).toBe('Dự án hiện tại: Thiên Mệnh')
   })
 
   it('translates and interpolates values as plain text', () => {
@@ -32,5 +39,7 @@ describe('i18n core', () => {
       .toBe('已关闭 3 个文件')
     expect(localize('en-US', '已关闭 {count} 个文件', 'Closed {count} files', { count: 3 }))
       .toBe('Closed 3 files')
+    expect(localize('vi-VN', '取消', 'Cancel')).toBe('Hủy')
+    expect(localize('vi-VN', '未翻译', 'Untranslated label')).toBe('Untranslated label')
   })
 })

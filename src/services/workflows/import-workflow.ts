@@ -36,8 +36,8 @@ export interface ImportWorkflowParams {
   authorChapterNumbers?: readonly number[]
 }
 
-function textForLocale(locale: ImportRunSnapshot['locale'], zhCNText: string, enUSText: string): string {
-  return locale === 'en-US' ? enUSText : zhCNText
+function textForLocale(locale: ImportRunSnapshot['locale'] | 'vi-VN', zhCNText: string, enUSText: string): string {
+  return locale === 'zh-CN' ? zhCNText : enUSText
 }
 
 function required<T>(result: { success: boolean; error?: string } & T, fallback: string): T {

@@ -1,3 +1,4 @@
+import { legacyUiLocale } from '../../i18n/core'
 import { useState, useCallback, useEffect } from 'react'
 import { FileUp, FolderOpen, BookOpen, FileText, Zap, Clock, AlertTriangle, RotateCcw } from 'lucide-react'
 import { useProjectStore } from '../../stores/project-store'
@@ -181,7 +182,7 @@ export default function ImportNovelDialog({ open, onClose }: ImportNovelDialogPr
           path: savePath.trim(),
           genre: '',
           targetAudience: '',
-          writingLanguage: locale,
+          writingLanguage: legacyUiLocale(locale),
         })
         if (!success) return
         project = useProjectStore.getState().currentProject
@@ -194,7 +195,7 @@ export default function ImportNovelDialog({ open, onClose }: ImportNovelDialogPr
       ))
       operationSession = projectSession
       const runId = explicitRun?.id ?? randomUUID()
-      const runLocale = explicitRun?.locale ?? locale
+      const runLocale = explicitRun?.locale ?? legacyUiLocale(locale)
       const result = await ipc.invoke('dialog:select-novel-files', {
         runId,
         purpose,
@@ -358,7 +359,7 @@ export default function ImportNovelDialog({ open, onClose }: ImportNovelDialogPr
         runId: randomUUID(),
         inspectionId: inspection.inspectionId,
         purpose,
-        locale,
+        locale: legacyUiLocale(locale),
         authorityFingerprint: authorPreview!.authorityFingerprint,
         manifestFingerprint: authorPreview!.manifestFingerprint,
       }

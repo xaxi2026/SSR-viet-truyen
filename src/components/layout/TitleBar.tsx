@@ -231,7 +231,7 @@ export default function TitleBar() {
         </div>
         <div className="leading-tight min-w-[112px]">
           <div className="text-sm font-semibold brand-gradient">
-            {locale === 'zh-CN' ? APP_BRAND.zhName : APP_BRAND.enName}
+            {locale === 'zh-CN' ? APP_BRAND.zhName : locale === 'vi-VN' ? 'SSR-viet truyen' : APP_BRAND.enName}
           </div>
           {locale === 'zh-CN' && (
             <div className="text-[0.68rem] opacity-75">{APP_BRAND.enName}</div>
@@ -326,7 +326,7 @@ export default function TitleBar() {
           style={{ minHeight: 24, padding: '0 7px' }}
         >
           <Languages size={13} strokeWidth={1.5} />
-          <span>{locale === 'zh-CN' ? 'EN' : '中文'}</span>
+          <span>{locale === 'zh-CN' ? 'EN' : locale === 'en-US' ? 'VI' : '中文'}</span>
         </button>
         <button
           onClick={() => openSettings()}

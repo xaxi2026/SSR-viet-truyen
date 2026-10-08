@@ -20,6 +20,7 @@ type UnknownRecord = Record<string, unknown>
 const UNKNOWN_JSON_RELATIONSHIP_GUIDANCE: Record<Locale, string> = {
   'zh-CN': '关系数据格式无法识别。请按“角色：关系”逐行重写。',
   'en-US': 'Relationship data format is unrecognized. Rewrite one relationship per line as “Character: relationship”.',
+  'vi-VN': 'Không nhận diện được dữ liệu quan hệ. Hãy viết mỗi quan hệ một dòng theo dạng “Nhân vật: quan hệ”.',
 }
 
 function isRecord(value: unknown): value is UnknownRecord {

@@ -121,12 +121,14 @@ export function findBlueprintContinuityRisks(
 export function mergeConsistencyFindingsIntoReview(
   review: ReviewLike,
   findings: readonly ConsistencyFinding[],
-  locale: 'zh-CN' | 'en-US',
+  locale: 'zh-CN' | 'en-US' | 'vi-VN',
 ): ReviewLike & { items: Array<Record<string, unknown>> } {
   const mapped = findings.map(finding => ({
-    category: locale === 'en-US' ? 'Deterministic continuity preflight' : '确定性一致性预检',
+    category: locale === 'zh-CN'
+      ? '确定性一致性预检'
+      : locale === 'vi-VN' ? 'Kiểm tra tính nhất quán' : 'Deterministic continuity preflight',
     severity: finding.severity,
-    description: locale === 'en-US' ? finding.issue.enUS : finding.issue.zhCN,
+    description: locale === 'zh-CN' ? finding.issue.zhCN : finding.issue.enUS,
     quote: finding.evidence,
     stableFactKey: finding.stableFactKey,
     sourceChapter: finding.sourceChapter,
