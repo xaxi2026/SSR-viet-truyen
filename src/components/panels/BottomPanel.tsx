@@ -580,6 +580,7 @@ function StepStatusIcon({ status }: { status: WorkflowStep['status'] }) {
 
 function LogsView() {
   const text = useLocaleStore(s => s.text)
+  const locale = useLocaleStore(s => s.locale)
   const globalLogs = useWorkflowStore(s => s.globalLogs)
   const clearLogs = useWorkflowStore(s => s.clearLogs)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -602,7 +603,7 @@ function LogsView() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between gap-1 px-2 py-1 flex-shrink-0">
-        <span className="text-[0.68rem] text-[var(--color-text-muted)]">AI Novel Writer v{__APP_VERSION__}</span>
+        <span className="text-[0.68rem] text-[var(--color-text-muted)]">{locale === 'vi-VN' ? 'SSR-viet truyen' : 'AI Novel Writer'} v{__APP_VERSION__}</span>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost" size="icon"
