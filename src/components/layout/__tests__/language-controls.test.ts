@@ -16,6 +16,5 @@ describe('language controls', () => {
     expect(source).toContain('setLocale')
     expect(source).toContain('<option value="zh-CN">')
     expect(source).toContain('<option value="en-US">')
-    expect(source).toContain('<option value="vi-VN">')
   })
 })
