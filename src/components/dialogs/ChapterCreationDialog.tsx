@@ -1,3 +1,4 @@
+import { legacyUiLocale } from '../../i18n/core'
 import { useState, useEffect, useRef } from 'react'
 import { Sparkles, Play, AlertCircle } from 'lucide-react'
 import { useProjectStore } from '../../stores/project-store'
@@ -204,7 +205,7 @@ function ChapterCreationDialogSession({ isOpen, onClose, prefill }: Props) {
       setAuthorityLoading(true)
       let nextChapterNumber: number
       try {
-        nextChapterNumber = await readAuthoritativeNextChapter(projectSession, locale)
+        nextChapterNumber = await readAuthoritativeNextChapter(projectSession, legacyUiLocale(locale))
       } catch (error) {
         if (!isCurrentRequest()) return
         setAuthorityError(error instanceof Error ? error.message : String(error))
@@ -295,7 +296,7 @@ function ChapterCreationDialogSession({ isOpen, onClose, prefill }: Props) {
     const targetChapter = Number(chapterNumber) || 1
     let authoritativeNextChapter: number
     try {
-      authoritativeNextChapter = await readAuthoritativeNextChapter(projectSession, locale)
+      authoritativeNextChapter = await readAuthoritativeNextChapter(projectSession, legacyUiLocale(locale))
     } catch (error) {
       if (!isProjectSessionCurrent(projectSession)) return
       setAuthorityError(error instanceof Error ? error.message : String(error))

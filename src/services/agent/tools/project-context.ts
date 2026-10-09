@@ -1,3 +1,4 @@
+import { legacyUiLocale } from '../../../i18n/core'
 import { useProjectStore } from '../../../stores/project-store'
 import type { AgentExecutionContext } from '../tool-registry'
 import type { ProjectSessionContext } from '../../../shared/ipc-channels'
@@ -41,7 +42,7 @@ export function createAgentExecutionContext(
     uiLocale,
     writingLanguage: project
       ? resolveWritingLanguage(project.novelConfig.writingLanguage)
-      : uiLocale,
+      : legacyUiLocale(uiLocale),
   })
 }
 

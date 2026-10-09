@@ -1,3 +1,4 @@
+import { legacyUiLocale } from '../../i18n/core'
 import { useEffect, useRef, useState } from 'react'
 import { CheckCircle2, Loader2, Circle, Sparkles, X, ChevronRight, StopCircle, AlertTriangle, SlidersHorizontal, Copy, Pencil, Trash2 } from 'lucide-react'
 import {
@@ -663,7 +664,7 @@ function WorkflowFailureNotice({
   projectPath: string
   projectSession: ProjectSessionContext | null
   isUnpersistedChapterDraft: boolean
-  locale: 'zh-CN' | 'en-US'
+  locale: 'zh-CN' | 'en-US' | 'vi-VN'
   /** 情节大纲生成被截断且已完成部分已保存 → 可断点续写。 */
   resumeSynopsisAvailable?: boolean
   resumingSynopsis?: boolean
@@ -673,7 +674,7 @@ function WorkflowFailureNotice({
   const presentation = presentWorkflowFailure(
     failureCode,
     error,
-    locale,
+    legacyUiLocale(locale),
     isUnpersistedChapterDraft,
     promptBudgetReport,
   )

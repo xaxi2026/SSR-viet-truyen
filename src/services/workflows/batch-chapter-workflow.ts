@@ -63,7 +63,7 @@ function normalizeCompletionMode(value: unknown): BatchChapterCompletionMode {
 }
 
 function localeText(locale: Locale, zhCNText: string, enUSText: string): string {
-  return locale === 'en-US' ? enUSText : zhCNText
+  return locale === 'zh-CN' ? zhCNText : enUSText
 }
 
 function toChapterInfo(
@@ -290,7 +290,7 @@ export function createBatchChapterWorkflow(params: BatchChapterWorkflowParams): 
   const projectPath = params.projectPath
   const startChapterNumber = Math.max(1, Math.trunc(Number(params.startChapterNumber) || 1))
   const chapterCount = normalizeBatchChapterCount(params.chapterCount)
-  const uiLocale: Locale = params.locale === 'en-US' ? 'en-US' : 'zh-CN'
+  const uiLocale: Locale = params.locale ?? 'zh-CN'
   const generationModelId = normalizeGenerationModelId(params.generationModelId)
   if (!generationModelId) {
     throw new Error(localeText(

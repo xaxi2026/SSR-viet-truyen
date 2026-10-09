@@ -186,7 +186,7 @@ export default function PromptSettings() {
           aria-label={text('编辑的写作语言', 'Writing language to edit')}
         >
           <option value="zh-CN">{text('简体中文', 'Chinese (Simplified)')}</option>
-          <option value="en-US">English</option>
+          <option value="en-US">{text('英语', 'English')}</option>
         </select>
       </label>
 
