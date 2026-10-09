@@ -66,3 +66,10 @@ Trên máy mới, chọn thư mục làm việc thích hợp; nếu có Git thì
 - Hướng dẫn cài ở máy công ty: \`docs/COMPANY_SETUP_VI.md\`.
 - Hướng dẫn kỹ thuật v2: \`docs/SSR_STORY_BRIDGE_V2.md\`.
 - Việc tiếp theo: kiểm thử giao diện Electron trực tiếp, hoàn thiện dàn ý theo từng nhóm chương, vận hành checkpoint truyện dài; không tự tuyên bố toàn bộ 500 chương đã được lập kế hoạch.
+
+## Kiểm thử hồi quy mở rộng (2026-10-10)
+
+- Đã chạy full `vitest run` trên laptop; phần lớn bài test được ghi nhận thành công nhưng lượt chạy không kết thúc đúng hạn. Log riêng trên máy nhà: `D:\1-tool\ssr_v2_full_suite.log`.
+- Một nhóm test nhập tài liệu 7/10 thất bại khi chạy chung vì `mainText` đọc ngôn ngữ UI đã lưu của laptop, khác locale mock `zh-CN` trong test. Đã sửa **chỉ trong test** để cô lập locale; chạy lại nhóm này 10/10 PASS.
+- V2 chuyên biệt: 18/18 Vitest, 8/8 Python, TypeScript, lint, i18n, build PASS. Khi làm tiếp, chạy full suite bằng worker limit hợp lý và ghi nhận các lỗi khác nếu có.
+- Không coi full regression PASS trước khi có kết quả cuối đầy đủ.
