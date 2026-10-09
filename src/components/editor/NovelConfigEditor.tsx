@@ -21,6 +21,8 @@ import { Input } from '../ui/Input'
 import { Textarea } from '../ui/Textarea'
 import { NativeSelect } from '../ui/NativeSelect'
 import GenerateConfigDialog from '../dialogs/GenerateConfigDialog'
+import StoryBridgeProposalDialog from '../dialogs/StoryBridgeProposalDialog'
+import { getStoryBridgeConflict, type StoryBridgeConfigProposal } from '../../shared/story-bridge-proposal'
 import { useLocaleStore } from '../../stores/locale-store'
 import {
   captureProjectSession,
@@ -53,6 +55,7 @@ function NovelConfigEditorSession({ projectKey }: { projectKey: string }) {
   const addLog = useWorkflowStore.getState().addLog
   const [saving, setSaving] = useState(false)
   const [showGenerateConfig, setShowGenerateConfig] = useState(false)
+  const [showBridgeProposal, setShowBridgeProposal] = useState(false)
   const text = useLocaleStore(s => s.text)
   const [generateSession, setGenerateSession] = useState<ReturnType<typeof captureProjectSession>>(null)
 
@@ -163,6 +166,20 @@ function NovelConfigEditorSession({ projectKey }: { projectKey: string }) {
     }
   }
 
+  /** Approval changes the editable form only; it never saves without the user's Save action. */
+  const handleBridgeApply = (proposal: StoryBridgeConfigProposal): boolean => {
+    const activeProject = useProjectStore.getState().currentProject
+    const session = captureProjectSession(activeProject)
+    if (!activeProject || !session || !isProjectSessionCurrent(session)
+      || !isProjectSessionPath(session, projectKey)
+      || getStoryBridgeConflict(proposal, activeProject.id, activeProject.novelConfig)) {
+      return false
+    }
+    updateNovelConfig(proposal.changes, session)
+    addLog('info', 'Đã nạp đề xuất ChatGPT vào biểu mẫu. Hãy kiểm tra và nhấn Lưu nếu đồng ý.')
+    return true
+  }
+
   const genres = ['玄幻', '仙侠', '都市', '科幻', '历史', '军事', '游戏', '末世', '悬疑', '灵异', '言情', '古言', '现言', '奇幻', '武侠', '轻小说', '同人', '职场']
   const dormantThreshold = resolveNarrativeThreadDormantThreshold(
     config.narrativeThreadDormantChapterThreshold,
@@ -182,6 +199,9 @@ function NovelConfigEditorSession({ projectKey }: { projectKey: string }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setShowBridgeProposal(true)}>
+              Đề xuất từ ChatGPT
+            </Button>
             <Button variant="ai" onClick={handleAIGenerate}>
               <Sparkles size={13} /> {text('AI 填充配置', 'Fill with AI')}
             </Button>
@@ -441,6 +461,13 @@ function NovelConfigEditorSession({ projectKey }: { projectKey: string }) {
         </div>
       </div>
 
+      <StoryBridgeProposalDialog
+        isOpen={showBridgeProposal}
+        onClose={() => setShowBridgeProposal(false)}
+        projectPath={projectKey}
+        projectId={currentProject?.id ?? ''}
+        onApply={handleBridgeApply}
+      />
       {/* AI 生成配置弹框 */}
       <GenerateConfigDialog
         isOpen={showGenerateConfig}
