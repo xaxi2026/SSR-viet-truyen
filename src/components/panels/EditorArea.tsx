@@ -561,7 +561,7 @@ export default function EditorArea({ onNewProject }: EditorAreaProps) {
               }}
             >
               <TabIcon type={tab.type} />
-              <span className="max-w-[120px] truncate">{tab.name}</span>
+              <span className="max-w-[120px] truncate">{tab.type === "config" ? text("小说配置", "Novel configuration") : tab.name}</span>
 
               {/* 关闭按钮区域：dirty 时显示实心圆点（英文黑点），鼠标悬停展示关闭按钮 */}
               {tab.dirty ? (

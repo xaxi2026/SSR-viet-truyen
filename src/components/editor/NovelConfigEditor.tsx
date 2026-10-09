@@ -346,12 +346,14 @@ function NovelConfigEditorSession({ projectKey }: { projectKey: string }) {
             <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
               <span>{text('作用范围：当前项目', 'Scope: this project')}</span>
               <span>{text(
-                `产品默认值：${DEFAULT_NARRATIVE_THREAD_DORMANT_THRESHOLD} 章`,
-                `Product default: ${DEFAULT_NARRATIVE_THREAD_DORMANT_THRESHOLD} chapters`,
+                '产品默认值：{count} 章',
+                'Product default: {count} chapters',
+                { count: DEFAULT_NARRATIVE_THREAD_DORMANT_THRESHOLD },
               )}</span>
               <span>{text(
-                `当前生效值：${dormantThreshold} 章`,
-                `Effective now: ${dormantThreshold} chapters`,
+                '当前生效值：{count} 章',
+                'Effective now: {count} chapters',
+                { count: dormantThreshold },
               )}</span>
             </div>
           </Section>

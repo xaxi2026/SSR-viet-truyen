@@ -93,7 +93,7 @@ export default function GenerateConfigDialog({ isOpen, onClose, onGenerated }: P
         setConfirming(true)
         const fieldList = filledFields.map(f => `• ${f}`).join('\n')
         const ok = await confirm(
-          text(`以下字段已有作者内容，AI 将保留原文并追加补充：\n\n${fieldList}\n\n确定要继续扩写吗？`, `These fields already contain author-written content. AI will preserve it and append useful additions:\n\n${fieldList}\n\nContinue expanding?`),
+          text('以下字段已有作者内容，AI 将保留原文并追加补充：\n\n{fields}\n\n确定要继续扩写吗？', 'These fields already contain author-written content. AI will preserve it and append useful additions:\n\n{fields}\n\nContinue expanding?', { fields: fieldList }),
           { title: text('扩写已有配置', 'Expand existing configuration'), confirmText: text('继续扩写', 'Expand'), cancelText: text('取消', 'Cancel') }
         )
         setConfirming(false)
@@ -119,7 +119,7 @@ export default function GenerateConfigDialog({ isOpen, onClose, onGenerated }: P
       // 扩写确认通过后，立即关闭弹窗
       onClose()
       toast.info(text('正在根据脑洞生成小说配置...', 'Generating novel configuration from your idea...'))
-      addLog('info', text(`正在根据创作脑洞生成小说配置（规模：${totalChapters} 章 / ${wordsPerChapter} 字/章）...`, `Generating novel configuration (${totalChapters} chapters / ${wordsPerChapter} words per chapter)...`))
+      addLog('info', text('正在根据创作脑洞生成小说配置（规模：{chapters} 章 / {words} 字/章）...', 'Generating novel configuration ({chapters} chapters / {words} words per chapter)...', { chapters: totalChapters, words: wordsPerChapter }))
 
       // 后台执行 LLM 调用（由 WorkflowEngine 接管并显示全局状态面板）
       void startWorkflow(workflow)
@@ -174,7 +174,7 @@ export default function GenerateConfigDialog({ isOpen, onClose, onGenerated }: P
                 {text('规模参数', 'Scale')}
               </span>
               <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
-                {text('全书约', 'About')}{' '}
+                {text('全书约', 'Approximately')}{' '}
                 <strong style={{ color: 'var(--color-text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
                   {((Number(totalChapters) || 0) * (Number(wordsPerChapter) || 0)).toLocaleString()}
                 </strong>{' '}
