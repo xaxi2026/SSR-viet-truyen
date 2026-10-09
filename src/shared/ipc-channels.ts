@@ -13,6 +13,7 @@ import type { ModelCapabilities } from './provider-presets'
 import type { ModelProviderResourceId } from './model-provider-resources'
 import type { WritingLanguage } from './writing-language'
 import type { DraftStatus } from './draft-status'
+import type { StoryBridgeResolveRequest, StoryBridgeResolveResponse, StoryBridgeHistoryResponse } from './story-bridge-review'
 import type {
   RecoveryCandidate,
   RecoveryCandidateRecordInput,
@@ -1093,6 +1094,18 @@ export interface ChapterLifecycleChannels {
   }
 }
 
+// ===== SSR Story Bridge: project-scoped and reviewed =====
+export interface StoryBridgeChannels {
+  'story-bridge:resolve': {
+    args: [request: StoryBridgeResolveRequest, expectedProjectPath: string]
+    return: StoryBridgeResolveResponse
+  }
+  'story-bridge:history': {
+    args: [expectedProjectPath: string]
+    return: StoryBridgeHistoryResponse
+  }
+}
+
 // ===== MCP =====
 export type MCPConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error'
 
@@ -1148,7 +1161,7 @@ export interface MCPChannels {
 }
 
 // ===== 合并所有频道 =====
-export type AllInvokeChannels = WindowChannels & OfficialHomepageChannels & ModelProviderResourceChannels & ConfigChannels & UpdateChannels & SkinChannels & ProjectChannels & FileChannels & AppDataChannels & LLMChannels & DatabaseChannels & KnowledgeBaseChannels & ChapterLifecycleChannels & ImportChannels & MCPChannels
+export type AllInvokeChannels = WindowChannels & OfficialHomepageChannels & ModelProviderResourceChannels & ConfigChannels & UpdateChannels & SkinChannels & ProjectChannels & FileChannels & AppDataChannels & LLMChannels & DatabaseChannels & KnowledgeBaseChannels & ChapterLifecycleChannels & ImportChannels & StoryBridgeChannels & MCPChannels
 export type AllEventChannels = LLMStreamEvents & UpdateStateEvents & WindowEvents
 
 /** 提取 invoke 频道名 */
