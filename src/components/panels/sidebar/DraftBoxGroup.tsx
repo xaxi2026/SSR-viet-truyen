@@ -65,7 +65,7 @@ export default function DraftBoxGroup({
         <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>{text('草稿箱', 'Draft box')}</span>
         {activeChapterCount > 0 && (
           <span className="ml-auto text-[0.7rem]" style={{ color: 'var(--color-text-muted)' }}>
-            {text(`${activeChapterCount} 章`, `${activeChapterCount} chapters`)}
+            {text('{count} chương', '{count} chapters', { count: activeChapterCount })}
           </span>
         )}
       </div>
@@ -162,7 +162,7 @@ function DraftChapterGroup({
           {displayTitle}
         </span>
         <span className="ml-auto text-[0.7rem] flex-shrink-0" style={{ color: 'var(--color-text-muted)' }}>
-          {text(`${activeDrafts.length} 稿`, `${activeDrafts.length} drafts`)}
+          {text('{count} bản nháp', '{count} drafts', { count: activeDrafts.length })}
         </span>
       </div>
 

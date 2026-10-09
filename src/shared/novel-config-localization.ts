@@ -48,10 +48,49 @@ const NARRATIVE_POV_LABELS: Readonly<Record<string, LocalizedLabel>> = {
   multi_pov: { zhCN: '多视角', enUS: 'Multiple viewpoints' },
 }
 
+/** Vietnamese names for built-in configuration enums; unknown author values are never translated. */
+const VI_LABELS: Readonly<Record<string, string>> = {
+  'Eastern fantasy': 'Huyền huyễn',
+  Xianxia: 'Tiên hiệp',
+  Urban: 'Đô thị',
+  'Science fiction': 'Khoa học viễn tưởng',
+  Historical: 'Lịch sử',
+  Military: 'Quân sự',
+  Game: 'Trò chơi',
+  'Post-apocalyptic': 'Hậu tận thế',
+  Mystery: 'Bí ẩn',
+  Supernatural: 'Siêu nhiên',
+  Romance: 'Tình cảm',
+  'Historical romance': 'Ngôn tình cổ đại',
+  'Contemporary romance': 'Ngôn tình hiện đại',
+  Fantasy: 'Kỳ ảo',
+  Wuxia: 'Kiếm hiệp',
+  'Light novel': 'Light novel',
+  'Fan fiction': 'Đồng nhân',
+  Workplace: 'Công sở',
+  'Male-oriented': 'Hướng nam',
+  'Female-oriented': 'Hướng nữ',
+  'All audiences': 'Mọi đối tượng',
+  'All ages': 'Mọi lứa tuổi',
+  'Three-act': 'Cấu trúc ba hồi',
+  'Hero’s journey': 'Hành trình anh hùng',
+  'Beat sheet': 'Bảng nhịp truyện',
+  'Kishōtenketsu': 'Khởi–thừa–chuyển–hợp',
+  'Multi-thread': 'Nhiều tuyến truyện',
+  Freeform: 'Cấu trúc tự do',
+  'Third-person limited': 'Ngôi thứ ba giới hạn',
+  'First person': 'Ngôi thứ nhất',
+  'Third-person omniscient': 'Ngôi thứ ba toàn tri',
+  'Multiple viewpoints': 'Nhiều góc nhìn',
+}
+
 function localize(value: string | undefined, labels: Readonly<Record<string, LocalizedLabel>>, language: WritingLanguage): string {
   if (!value) return ''
   const label = labels[value]
-  return label ? (language === 'en-US' ? label.enUS : label.zhCN) : value
+  return label
+    ? language === 'zh-CN' ? label.zhCN
+      : language === 'vi-VN' ? (VI_LABELS[label.enUS] ?? label.enUS) : label.enUS
+    : value
 }
 
 type ModelFactConfig = Partial<Record<'genre' | 'targetAudience' | 'plotStructure' | 'narrativePOV', string>>

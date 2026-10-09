@@ -292,6 +292,12 @@ export function getNarrativePOVLabel(pov: string, writingLanguage: WritingLangua
     third_omniscient: '第三人称全知视角',
     multi_pov: '多视角轮换',
     },
+    'vi-VN': {
+      first_person: 'ngôi thứ nhất',
+      third_limited: 'ngôi thứ ba giới hạn',
+      third_omniscient: 'ngôi thứ ba toàn tri',
+      multi_pov: 'luân phiên nhiều góc nhìn',
+    },
     'en-US': {
       first_person: 'first person',
       third_limited: 'third-person limited',

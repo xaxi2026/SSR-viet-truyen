@@ -32,4 +32,19 @@ describe('model-facing novel config facts', () => {
       narrativePOV: '第三人称有限',
     })
   })
+  it('uses Vietnamese labels without altering unknown author-defined values', () => {
+    expect(localizeNovelConfigFacts({
+      genre: '科幻',
+      targetAudience: '全龄',
+      plotStructure: 'three_act',
+      narrativePOV: 'third_limited',
+    }, 'vi-VN')).toEqual({
+      genre: 'Khoa học viễn tưởng',
+      targetAudience: 'Mọi lứa tuổi',
+      plotStructure: 'Cấu trúc ba hồi',
+      narrativePOV: 'Ngôi thứ ba giới hạn',
+    })
+    expect(localizeNovelConfigFacts({ genre: 'solarpunk noir' }, 'vi-VN').genre)
+      .toBe('solarpunk noir')
+  })
 })

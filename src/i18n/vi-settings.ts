@@ -124,6 +124,7 @@ export const viSettings: Readonly<Record<string, string>> = {
   "Custom prompts change AI writing guidance only. Output constraints such as JSON schemas are appended automatically. Overrides can be global for all novels or project-specific.": "Lời nhắc tùy chỉnh chỉ thay đổi hướng dẫn sáng tác của AI. Các ràng buộc đầu ra như định dạng JSON vẫn được thêm tự động. Có thể áp dụng cho tất cả truyện hoặc chỉ một dự án.",
   "Writing language to edit": "Ngôn ngữ nội dung cần chỉnh sửa",
   "Chinese and English overrides are stored independently.": "Lời nhắc tiếng Trung và tiếng Anh được lưu riêng biệt.",
+  "Chinese, English, and Vietnamese overrides are stored independently.": "Lời nhắc tiếng Trung, tiếng Anh và tiếng Việt được lưu riêng biệt.",
   "Chinese (Simplified)": "Tiếng Trung giản thể",
   "Saved to global settings": "Đã lưu vào cấu hình chung",
   "Save failed": "Lưu thất bại",

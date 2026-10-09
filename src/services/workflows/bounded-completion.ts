@@ -341,7 +341,7 @@ function continuationPromptCharBudget(uiLocale: Locale, budget?: BoundedCompleti
 }
 
 function truncationMarker(writingLanguage: WritingLanguage): string {
-  return writingLanguage === 'en-US' ? EN_US_TRUNCATION_MARKER : ZH_CN_TRUNCATION_MARKER
+  return writingLanguage === 'zh-CN' ? ZH_CN_TRUNCATION_MARKER : EN_US_TRUNCATION_MARKER
 }
 
 function truncateWithHeadAndTail(

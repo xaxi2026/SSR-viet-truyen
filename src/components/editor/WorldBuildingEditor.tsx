@@ -122,9 +122,11 @@ export default function WorldBuildingEditor({ projectKey }: { projectKey: string
     let recoveredWorldBuildingCandidate = ''
     const dbSynopsis = core?.synopsis || ''
     const totalChapters = Number(core?.totalChapters ?? currentProject?.novelConfig?.totalChapters) || 0
-    const writingLanguage = (core?.writingLanguage ?? currentProject?.novelConfig?.writingLanguage) === 'en-US'
-      ? 'en-US'
-      : 'zh-CN'
+    const writingLanguage = (core?.writingLanguage ?? currentProject?.novelConfig?.writingLanguage) === 'vi-VN'
+      ? 'vi-VN'
+      : (core?.writingLanguage ?? currentProject?.novelConfig?.writingLanguage) === 'en-US'
+        ? 'en-US'
+        : 'zh-CN'
     const visiblyPartial = hasVisiblePartialSynopsisMarker(dbSynopsis)
     try {
       const partialResult = await ipc.invokeWithProjectSession(

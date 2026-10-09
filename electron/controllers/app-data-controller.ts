@@ -52,6 +52,7 @@ function isPromptTemplate(value: unknown): value is AppPromptTemplate {
       (value as AppPromptTemplate).writingLanguage === undefined
       || (value as AppPromptTemplate).writingLanguage === 'zh-CN'
       || (value as AppPromptTemplate).writingLanguage === 'en-US'
+      || (value as AppPromptTemplate).writingLanguage === 'vi-VN'
     )
 }
 
@@ -191,11 +192,11 @@ function promptFilename(template: AppPromptTemplate): string {
 }
 
 function promptKeyFromFilename(filename: string): string {
-  return path.basename(filename, '.json').replace(/\.(?:zh-CN|en-US)$/u, '')
+  return path.basename(filename, '.json').replace(/\.(?:zh-CN|en-US|vi-VN)$/u, '')
 }
 
 function promptLanguageFromFilename(filename: string): WritingLanguage | undefined {
-  const match = filename.match(/\.(zh-CN|en-US)\.json$/u)
+  const match = filename.match(/\.(zh-CN|en-US|vi-VN)\.json$/u)
   return match?.[1] as WritingLanguage | undefined
 }
 

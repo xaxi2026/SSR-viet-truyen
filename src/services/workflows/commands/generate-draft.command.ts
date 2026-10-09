@@ -278,7 +278,7 @@ function hasSubstantialPreviousChapterReuse(
   draft: string,
   writingLanguage: WritingLanguage,
 ): boolean {
-  const ngramCharacters = writingLanguage === 'en-US'
+  const ngramCharacters = writingLanguage !== 'zh-CN'
     ? CROSS_CHAPTER_REUSE_ENGLISH_NGRAM_CHARS
     : CROSS_CHAPTER_REUSE_CJK_NGRAM_CHARS
   const normalize = (text: string) => text
