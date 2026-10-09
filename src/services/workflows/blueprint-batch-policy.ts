@@ -78,11 +78,11 @@ export function planBlueprintGenerationCost(chapterCount: number): BlueprintGene
 }
 
 export function getBlueprintBatchAdvice(
-  locale: 'zh-CN' | 'en-US',
+  locale: 'zh-CN' | 'en-US' | 'vi-VN',
   chapterCount?: number,
 ): string {
   const plan = chapterCount === undefined ? null : planBlueprintGenerationCost(chapterCount)
-  if (locale === 'en-US') {
+  if (locale !== 'zh-CN') {
     const estimate = plan === null
       ? ''
       : ` Estimated baseline: ${plan.expectedCalls} model call(s); task allowance: up to ${plan.maxCalls}.`

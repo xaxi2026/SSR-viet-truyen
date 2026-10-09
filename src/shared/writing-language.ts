@@ -1,4 +1,4 @@
-export const WRITING_LANGUAGES = ['zh-CN', 'en-US'] as const
+export const WRITING_LANGUAGES = ['zh-CN', 'en-US', 'vi-VN'] as const
 
 export type WritingLanguage = typeof WRITING_LANGUAGES[number]
 
@@ -16,5 +16,5 @@ export function writingLanguageText(
   zhCNText: string,
   enUSText: string,
 ): string {
-  return language === 'en-US' ? enUSText : zhCNText
+  return language === 'zh-CN' ? zhCNText : enUSText
 }

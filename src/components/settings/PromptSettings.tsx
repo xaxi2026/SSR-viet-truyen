@@ -173,7 +173,7 @@ export default function PromptSettings() {
             {text('编辑的写作语言', 'Writing language to edit')}
           </span>
           <span className="block text-[0.68rem] text-[var(--color-text-muted)]">
-            {text('中英文覆盖独立保存，不会互相串用。', 'Chinese and English overrides are stored independently.')}
+            {text('中英文覆盖独立保存，不会互相串用。', 'Chinese, English, and Vietnamese overrides are stored independently.')}
           </span>
         </span>
         <select
@@ -187,6 +187,7 @@ export default function PromptSettings() {
         >
           <option value="zh-CN">{text('简体中文', 'Chinese (Simplified)')}</option>
           <option value="en-US">{text('英语', 'English')}</option>
+          <option value="vi-VN">Tiếng Việt</option>
         </select>
       </label>
 

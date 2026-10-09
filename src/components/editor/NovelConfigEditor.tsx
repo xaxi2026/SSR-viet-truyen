@@ -204,6 +204,7 @@ function NovelConfigEditorSession({ projectKey }: { projectKey: string }) {
                 >
                   <option value="zh-CN">{text('简体中文', 'Simplified Chinese')}</option>
                   <option value="en-US">English</option>
+                  <option value="vi-VN">Tiếng Việt</option>
                 </NativeSelect>
               </Field>
               <p className="col-span-2 text-xs leading-5 text-[var(--color-text-muted)]">

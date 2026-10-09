@@ -182,7 +182,7 @@ export default function ImportNovelDialog({ open, onClose }: ImportNovelDialogPr
           path: savePath.trim(),
           genre: '',
           targetAudience: '',
-          writingLanguage: legacyUiLocale(locale),
+          writingLanguage: locale,
         })
         if (!success) return
         project = useProjectStore.getState().currentProject

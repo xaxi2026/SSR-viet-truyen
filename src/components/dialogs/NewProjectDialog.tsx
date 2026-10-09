@@ -1,4 +1,3 @@
-import { legacyUiLocale } from '../../i18n/core'
 import { useState, useEffect } from 'react'
 import { FolderOpen, Sparkles } from 'lucide-react'
 import { useProjectStore } from '../../stores/project-store'
@@ -47,7 +46,7 @@ export default function NewProjectDialog({ open, onClose }: NewProjectDialogProp
       path: path.trim(),
       genre: '',
       targetAudience: '',
-      writingLanguage: legacyUiLocale(locale),
+      writingLanguage: locale,
     })
     setCreating(false)
     if (success) {

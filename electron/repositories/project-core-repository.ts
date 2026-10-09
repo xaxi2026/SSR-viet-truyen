@@ -224,7 +224,7 @@ export class ProjectCoreRepository {
             AND genre = ?
             AND total_chapters = ?
             AND words_per_chapter = ?
-            AND CASE WHEN writing_language = 'en-US' THEN 'en-US' ELSE 'zh-CN' END = ?
+            AND CASE WHEN writing_language IN ('zh-CN', 'en-US', 'vi-VN') THEN writing_language ELSE 'zh-CN' END = ?
             AND plot_structure = ?
             AND narrative_pov = ?
             AND global_guidance = ?

@@ -56,7 +56,7 @@ export function isCoreLocalizedBuiltinPromptKey(key: string): key is CoreLocaliz
   return CORE_LOCALIZED_BUILTIN_PROMPT_KEY_SET.has(key)
 }
 
-const CHARACTER_ARCHITECTURE_PROMPTS: Readonly<Record<WritingLanguage, CharacterArchitecturePromptSet>> = {
+const CHARACTER_ARCHITECTURE_PROMPTS: Readonly<Record<Exclude<WritingLanguage, 'vi-VN'>, CharacterArchitecturePromptSet>> = {
   'zh-CN': {
     manifestSystem: `你是小说角色身份规划器。只规划角色身份、叙事职责和角色间关系，不生成角色详情。
 故事前提和主角档案中的作者明确设定是权威事实；涉及角色身份、特质、关系或叙事职责的事实必须落实，不得遗漏、弱化、反转或用题材惯例替换。
@@ -130,7 +130,18 @@ Output {"entries":[...]} only. Echo slotId on every entry; name and role must ex
 }
 
 export function characterArchitecturePrompts(language: WritingLanguage): CharacterArchitecturePromptSet {
-  return CHARACTER_ARCHITECTURE_PROMPTS[language]
+  if (language !== 'vi-VN') return CHARACTER_ARCHITECTURE_PROMPTS[language]
+  const english = CHARACTER_ARCHITECTURE_PROMPTS['en-US']
+  const directive = 'Viết mọi giá trị mô tả nhân vật bằng tiếng Việt tự nhiên, có dấu. '
+    + 'Giữ nguyên khóa JSON, slotId, enum role, schema và các giới hạn của hợp đồng. '
+    + 'Tuyệt đối không thay đổi những dữ kiện và quan hệ đã được tác giả xác nhận. '
+  return {
+    manifestSystem: directive + english.manifestSystem,
+    detailSystem: directive + english.detailSystem,
+    detailContract: directive + english.detailContract,
+    manifestTask: (context, minimum, maximum) => directive + english.manifestTask(context, minimum, maximum),
+    detailTask: input => directive + english.detailTask(input),
+  }
 }
 
 /**
