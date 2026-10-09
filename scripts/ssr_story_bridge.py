@@ -129,16 +129,53 @@ def stage(project, source):
         os.fsync(file.fileno())
     return {"status": "pending_review", "proposalId": artifact["proposalId"], "path": str(pending), "fields": list(changes)}
 
+def history(project):
+    baseline = snapshot(project)
+    directory = Path(baseline["projectPath"]) / ".vela" / "story-bridge" / "history"
+    if not directory.exists():
+        return {"projectId": baseline["projectId"], "history": []}
+    if directory.is_symlink() or not directory.is_dir():
+        raise ValueError("Thư mục lịch sử không hợp lệ.")
+    entries = []
+    for item in list(directory.glob("*.json"))[:100]:
+        if item.is_symlink() or item.stat().st_size > MAX_FILE_BYTES:
+            raise ValueError("Tệp lịch sử không hợp lệ.")
+        record = read_json(item)
+        proposal = record.get("proposal", {})
+        resolution = record.get("resolution", {})
+        if not isinstance(proposal, dict) or not isinstance(resolution, dict):
+            continue
+        if proposal.get("projectId") != baseline["projectId"]:
+            continue
+        if proposal.get("proposalId", "") + ".json" != item.name:
+            continue
+        if resolution.get("status") not in ("accepted", "rejected", "revision_requested"):
+            continue
+        entries.append({
+            "proposalId": proposal["proposalId"],
+            "status": resolution["status"],
+            "resolvedAt": resolution.get("resolvedAt", ""),
+            "feedback": resolution.get("feedback", ""),
+            "fields": list(proposal.get("changes", {})),
+        })
+    entries.sort(key=lambda item: item["resolvedAt"], reverse=True)
+    return {"projectId": baseline["projectId"], "history": entries[:30]}
+
 def main():
     parser = argparse.ArgumentParser(description="SSR Story Bridge — staged, review-only configuration proposals")
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("inspect", "propose"):
+    for name in ("inspect", "propose", "history"):
         cmd = commands.add_parser(name)
         cmd.add_argument("--project", required=True, type=Path)
         if name == "propose":
             cmd.add_argument("--input", required=True, type=Path)
     args = parser.parse_args()
-    result = snapshot(args.project) if args.command == "inspect" else stage(args.project, args.input)
+    if args.command == "inspect":
+        result = snapshot(args.project)
+    elif args.command == "history":
+        result = history(args.project)
+    else:
+        result = stage(args.project, args.input)
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 if __name__ == "__main__":

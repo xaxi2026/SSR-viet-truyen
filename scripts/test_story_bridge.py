@@ -73,6 +73,31 @@ class StoryBridgeTest(unittest.TestCase):
                 bridge.stage(self.project, self._proposal(patch))
         self.assertFalse((self.project / ".vela" / "story-bridge").exists())
 
+    def test_history_returns_review_feedback_without_writing_database(self):
+        before = self.dbfile.read_bytes()
+        history = self.project / ".vela" / "story-bridge" / "history"
+        history.mkdir(parents=True)
+        identifier = "e1f42b1f-41e5-4882-b08d-68a47b149395"
+        archived = {
+            "proposal": {
+                "proposalId": identifier,
+                "projectId": self.project_id,
+                "changes": {"coreOutline": "Bản cũ"}
+            },
+            "resolution": {
+                "status": "revision_requested",
+                "feedback": "Đổi động cơ nhân vật chính.",
+                "resolvedAt": "2026-10-10T08:00:00Z",
+            }
+        }
+        (history / (identifier + ".json")).write_text(
+            json.dumps(archived, ensure_ascii=False), encoding="utf8")
+        result = bridge.history(self.project)
+        self.assertEqual(len(result["history"]), 1)
+        self.assertEqual(result["history"][0]["status"], "revision_requested")
+        self.assertEqual(result["history"][0]["feedback"], "Đổi động cơ nhân vật chính.")
+        self.assertEqual(self.dbfile.read_bytes(), before)
+
     def test_wrong_project_identity_blocked(self):
         data = self._proposal({"coreOutline": "Tóm lược"})
         data.write_text(json.dumps({

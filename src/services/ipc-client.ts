@@ -64,6 +64,7 @@ function isProjectScopedChannel(channel: string): boolean {
     || channel === 'project:save'
     || channel === 'project:update-config'
     || channel === 'project:delete'
+    || channel.startsWith('story-bridge:')
 }
 
 function invokeWithSession<C extends InvokeChannel>(
