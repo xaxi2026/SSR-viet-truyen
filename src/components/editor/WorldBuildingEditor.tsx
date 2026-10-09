@@ -6,6 +6,7 @@ import { useLocaleStore } from '../../stores/locale-store'
 import { renderIcon } from '../panels/sidebar/sidebar-icons'
 
 import ArchitectureConfirmDialog from '../dialogs/ArchitectureConfirmDialog'
+import StoryBridgeArchitectureDialog from '../dialogs/StoryBridgeArchitectureDialog'
 
 import { Button } from '../ui/Button'
 import { EmptyState } from '../ui/EmptyState'
@@ -80,6 +81,7 @@ export default function WorldBuildingEditor({ projectKey }: { projectKey: string
   const [pendingSynopsisRange, setPendingSynopsisRange] = useState<{ from: number; to: number } | null>(null)
   const [loading, setLoading] = useState(true)
   const [showArchDialog, setShowArchDialog] = useState(false)
+  const [showStoryBridge, setShowStoryBridge] = useState(false)
   const lastCompletedArchitectureRunRef = useRef<string | null>(null)
   const archStatusRequestGate = useRef(new LatestRequestGate())
   const {
@@ -428,6 +430,9 @@ export default function WorldBuildingEditor({ projectKey }: { projectKey: string
           </span>
         </div>
         <div className="flex items-center gap-1.5">
+          <Button variant="outline" size="sm" onClick={() => setShowStoryBridge(true)}>
+            Đề xuất từ ChatGPT
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -449,6 +454,11 @@ export default function WorldBuildingEditor({ projectKey }: { projectKey: string
         </div>
       </div>
 
+      <StoryBridgeArchitectureDialog
+        isOpen={showStoryBridge}
+        onClose={() => { setShowStoryBridge(false); void loadStatus() }}
+        projectPath={projectKey}
+      />
       {/* 文件卡片列表 */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {ARCH_FILES.map(f => {

@@ -244,13 +244,73 @@ def stage_characters(project, source):
             "characters": [card["name"] for card in approved], "path": str(pending)}
 
 
+ARCH_FIELDS = ("premise", "worldbuilding", "synopsis")
+
+def inspect_architecture(project):
+    original = snapshot(project)
+    db = Path(original["projectPath"]) / ".vela" / "vela.db"
+    with closing(sqlite3.connect(db.as_uri() + "?mode=ro", uri=True, timeout=5)) as conn:
+        conn.execute("PRAGMA query_only=ON")
+        row = conn.execute("SELECT premise, worldbuilding, synopsis "
+                           "FROM project_core WHERE id='main'").fetchone()
+        if row is None:
+            raise ValueError("Không tìm thấy cấu trúc truyện.")
+    return {
+        "projectId": original["projectId"],
+        "projectName": original["projectName"],
+        "baseline": dict(zip(ARCH_FIELDS, row)),
+        "note": "Sơ đồ nhân vật là bản chiếu từ kho nhân vật, không được ghi từ bridge."
+    }
+
+
+def stage_architecture(project, source):
+    state = inspect_architecture(project)
+    proposal = read_json(source)
+    if proposal.get("projectId") != state["projectId"]:
+        raise ValueError("Đề xuất cấu trúc thuộc dự án khác.")
+    changes = proposal.get("changes")
+    if not isinstance(changes, dict) or not changes or not set(changes).issubset(ARCH_FIELDS):
+        raise ValueError("Chỉ chấp nhận premise, worldbuilding, synopsis.")
+    if any(not isinstance(v, str) or not v.strip() or len(v) > 60000
+           for v in changes.values()):
+        raise ValueError("Cấu trúc truyện quá dài hoặc không hợp lệ.")
+    note = proposal.get("note", "")
+    if not isinstance(note, str) or len(note) > 2000:
+        raise ValueError("Ghi chú không hợp lệ.")
+    root = Path(snapshot(project)["projectPath"]) / ".vela" / "story-bridge"
+    if root.is_symlink():
+        raise ValueError("Không cho phép liên kết tượng trưng.")
+    root.mkdir(mode=0o700, exist_ok=True)
+    pending = root / "pending-architecture.json"
+    staged = {
+        "kind": "ssr-architecture-proposal",
+        "schemaVersion": 1,
+        "status": "pending",
+        "proposalId": str(uuid4()),
+        "projectId": state["projectId"],
+        "projectName": state["projectName"],
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "note": note,
+        "baseline": state["baseline"],
+        "changes": changes,
+    }
+    data = json.dumps(staged, ensure_ascii=False, indent=2)
+    if len(data.encode("utf8")) > MAX_FILE_BYTES:
+        raise ValueError("Đề xuất vượt giới hạn kích thước.")
+    with pending.open("x", encoding="utf8") as file:
+        file.write(data)
+        file.flush()
+        os.fsync(file.fileno())
+    return {"status": "pending_review", "proposalId": staged["proposalId"],
+            "path": str(pending), "fields": list(changes)}
+
 def main():
     parser = argparse.ArgumentParser(description="SSR Story Bridge — staged, review-only configuration proposals")
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("inspect", "propose", "history", "inspect-characters", "propose-characters"):
+    for name in ("inspect", "propose", "history", "inspect-characters", "propose-characters", "inspect-architecture", "propose-architecture"):
         cmd = commands.add_parser(name)
         cmd.add_argument("--project", required=True, type=Path)
-        if name in ("propose", "propose-characters"):
+        if name in ("propose", "propose-characters", "propose-architecture"):
             cmd.add_argument("--input", required=True, type=Path)
     args = parser.parse_args()
     if args.command == "inspect":
@@ -261,6 +321,10 @@ def main():
         result = inspect_characters(args.project)
     elif args.command == "propose-characters":
         result = stage_characters(args.project, args.input)
+    elif args.command == "inspect-architecture":
+        result = inspect_architecture(args.project)
+    elif args.command == "propose-architecture":
+        result = stage_architecture(args.project, args.input)
     else:
         result = stage(args.project, args.input)
     print(json.dumps(result, ensure_ascii=False, indent=2))
