@@ -67,3 +67,6 @@ tailwind.config.js.bak
 *.tsbuildinfo
 __pycache__/
 *.py[cod]
+
+# Local novel projects and backups: do not publish
+/SSR-truyen/
