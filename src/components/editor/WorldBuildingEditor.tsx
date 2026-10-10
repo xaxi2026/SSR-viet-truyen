@@ -7,6 +7,7 @@ import { renderIcon } from '../panels/sidebar/sidebar-icons'
 
 import ArchitectureConfirmDialog from '../dialogs/ArchitectureConfirmDialog'
 import StoryBridgeArchitectureDialog from '../dialogs/StoryBridgeArchitectureDialog'
+import StoryBridgeOutlineDialog from '../dialogs/StoryBridgeOutlineDialog'
 
 import { Button } from '../ui/Button'
 import { EmptyState } from '../ui/EmptyState'
@@ -82,6 +83,7 @@ export default function WorldBuildingEditor({ projectKey }: { projectKey: string
   const [loading, setLoading] = useState(true)
   const [showArchDialog, setShowArchDialog] = useState(false)
   const [showStoryBridge, setShowStoryBridge] = useState(false)
+  const [showOutlineBridge, setShowOutlineBridge] = useState(false)
   const lastCompletedArchitectureRunRef = useRef<string | null>(null)
   const archStatusRequestGate = useRef(new LatestRequestGate())
   const {
@@ -430,6 +432,9 @@ export default function WorldBuildingEditor({ projectKey }: { projectKey: string
           </span>
         </div>
         <div className="flex items-center gap-1.5">
+          <Button variant="outline" size="sm" onClick={() => setShowOutlineBridge(true)}>
+            Dàn ý ChatGPT
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowStoryBridge(true)}>
             Đề xuất từ ChatGPT
           </Button>
@@ -454,6 +459,11 @@ export default function WorldBuildingEditor({ projectKey }: { projectKey: string
         </div>
       </div>
 
+      <StoryBridgeOutlineDialog
+        isOpen={showOutlineBridge}
+        onClose={() => setShowOutlineBridge(false)}
+        projectPath={projectKey}
+      />
       <StoryBridgeArchitectureDialog
         isOpen={showStoryBridge}
         onClose={() => { setShowStoryBridge(false); void loadStatus() }}

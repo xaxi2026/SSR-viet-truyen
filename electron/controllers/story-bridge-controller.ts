@@ -2,6 +2,8 @@ import { ipcMain } from 'electron'
 import { CharacterRepository } from '../repositories/character-repository'
 import type { BridgeV2ResolveRequest } from '../../src/shared/story-bridge-architecture'
 import { resolveCharacterBridge, resolveArchitectureBridge, listBridgeV2History } from '../services/story-bridge-v2-service'
+import { readOutlineBridge, resolveOutlineBridge } from '../services/story-bridge-outline-service'
+import type { OutlineResolution } from '../../src/shared/story-bridge-outline'
 import type { ProjectSessionContext } from '../../src/shared/ipc-channels'
 import type { StoryBridgeResolveRequest } from '../../src/shared/story-bridge-review'
 import { getCurrentProjectPath, getProjectDb } from '../database'
@@ -84,6 +86,40 @@ export function registerStoryBridgeController(): void {
         throw new Error('Loại đề xuất không hợp lệ.')
       }
       return { success: true, history: listBridgeV2History(lease.rootPath, kind, lease.projectId) }
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+  })
+
+  ipcMain.handle('story-bridge:outline:read', async (
+    _event,
+    expectedProjectPath: string,
+    context: ProjectSessionContext,
+  ) => {
+    try {
+      const lease = authorize(context, expectedProjectPath)
+      const db = getProjectDb()
+      if (!db) throw new Error('SQLite của dự án chưa được mở.')
+      return readOutlineBridge(lease.rootPath, lease.projectId, db)
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+  })
+
+  ipcMain.handle('story-bridge:outline:resolve', async (
+    _event,
+    request: { proposalId: string; action: OutlineResolution; feedback: string },
+    expectedProjectPath: string,
+    context: ProjectSessionContext,
+  ) => {
+    try {
+      const lease = authorize(context, expectedProjectPath)
+      const db = getProjectDb()
+      if (!db) throw new Error('SQLite của dự án chưa được mở.')
+      return {
+        success: true,
+        entry: resolveOutlineBridge(lease.rootPath, lease.projectId, db, request),
+      }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : String(error) }
     }
