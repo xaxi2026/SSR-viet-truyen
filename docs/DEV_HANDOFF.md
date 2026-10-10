@@ -73,3 +73,12 @@ Trên máy mới, chọn thư mục làm việc thích hợp; nếu có Git thì
 - Một nhóm test nhập tài liệu 7/10 thất bại khi chạy chung vì `mainText` đọc ngôn ngữ UI đã lưu của laptop, khác locale mock `zh-CN` trong test. Đã sửa **chỉ trong test** để cô lập locale; chạy lại nhóm này 10/10 PASS.
 - V2 chuyên biệt: 18/18 Vitest, 8/8 Python, TypeScript, lint, i18n, build PASS. Khi làm tiếp, chạy full suite bằng worker limit hợp lý và ghi nhận các lỗi khác nếu có.
 - Không coi full regression PASS trước khi có kết quả cuối đầy đủ.
+
+## Tiến độ mới — Dàn ý theo đợt trên laptop nhà
+
+- Branch mới `feat/story-bridge-outline-batches` (stacked trên `feat/story-bridge-v2-architecture`).
+- Bộ nhận dàn ý 10 chương/lần độc lập với checkpoint sinh `synopsis` nội bộ. CLI `scripts/ssr_outline_bridge.py`: `inspect`, `propose`, `read-approved`.
+- Electron UI: Cấu trúc truyện → **Dàn ý ChatGPT**, xem/duyệt/từ chối/yêu cầu sửa/lịch sử; main process kiểm tra projectId, nguồn dữ kiện, roster revision/hash, chuỗi đợt không bị đứt hay lặp.
+- Tài liệu kỹ thuật: `docs/SSR_STORY_BRIDGE_OUTLINE_BATCHES.md`.
+- Laptop nhà có bản nháp nội dung chương 1–10 `D:\1-tool\ssr-test1-outline-001-010-draft.json`, **không đưa lên GitHub**, chưa stage do Tiền đề và Xây dựng thế giới trong SQLite còn trống. User cần duyệt đề xuất v2 trước.
+- GitHub phía công ty đã có `.gitignore` không theo dõi `/SSR-truyen/`. Không đưa dữ liệu test-1 trong cả hai máy lên repo.
