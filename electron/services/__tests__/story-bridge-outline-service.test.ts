@@ -123,6 +123,24 @@ describe('Story Bridge outline batches: approved sequence is independent from bu
     expect(readOutlineBridge(root, id, fakeDb()).coveredTo).toBe(10)
   })
 
+  it('accepts an entire remaining 80-chapter volume only at the 100 chapter boundary', () => {
+    const volume = { ...proposal(21, 100), kind: 'ssr-outline-volume-proposal' as const }
+    expect(parseOutlineProposal(volume).chapters).toHaveLength(80)
+    expect(() => parseOutlineProposal({ ...volume, to: 99, chapters: volume.chapters.slice(0, -1) }))
+      .toThrow('không hợp lệ')
+    expect(() => parseOutlineProposal({ ...volume, kind: 'ssr-outline-batch-proposal' }))
+      .toThrow('không hợp lệ')
+    stage(proposal())
+    resolve()
+    stage(proposal(11, 20, second, first))
+    resolve(second)
+    stage({ ...volume, previousAcceptedId: second, proposalId: '8fc57c38-1212-450c-947b-94bc9d8b331a' })
+    const entry = resolve('8fc57c38-1212-450c-947b-94bc9d8b331a')
+    expect(entry.to).toBe(100)
+    const status = readOutlineBridge(root, id, fakeDb())
+    expect(status.coveredTo).toBe(100)
+    expect(status.history?.filter(h => h.status === 'accepted')).toHaveLength(3)
+  })
   it('does not read or accept another project identity', () => {
     stage({...proposal(),projectId:'wrong'})
     expect(() => resolve()).toThrow('dự án khác')

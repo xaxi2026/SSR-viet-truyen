@@ -13,7 +13,7 @@ interface OutlineReceipt {
 }
 
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/iu
-const MAX_BYTES = 250000
+const MAX_BYTES = 600000
 
 function safeDirectories(projectRoot: string, create: boolean) {
   const root = fs.realpathSync.native(projectRoot)

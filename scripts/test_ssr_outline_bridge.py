@@ -129,5 +129,59 @@ class OutlineBridgeTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "đã đổi"):
             bridge.propose(self.project, self.input(self.proposal(11, 20)))
 
+    def test_volume_supersedes_identical_pending_prefix_with_receipt(self):
+        old_input = self.input(self.proposal())
+        prior = bridge.propose(self.project, old_input)
+        initial = bridge.read_json(Path(prior["path"]))
+        volume = self.proposal(1, 100)
+        source = self.input(volume)
+        self.assertEqual(bridge.read_json(Path(prior["path"]))["to"], 10)
+        staged = bridge.propose(self.project, source, volume=True, supersede=True)
+        self.assertEqual(staged["to"], 100)
+        receipt_path = self.vela / "story-bridge" / "history" / "outline" / (prior["proposalId"] + ".json")
+        receipt = bridge.read_json(receipt_path)
+        self.assertEqual(receipt["proposal"], initial)
+        self.assertEqual(receipt["resolution"]["status"], "revision_requested")
+        self.assertEqual(bridge.read_json(Path(staged["path"]))["kind"], "ssr-outline-volume-proposal")
+        self.assertEqual(bridge.read_json(Path(staged["path"]))["chapters"][:10], initial["chapters"])
+        self.assertEqual(bridge.inspect(self.project)["coveredTo"], 0)
+        self.assertEqual(bridge.inspect(self.project)["pending"], True)
+
+    def test_volume_blocks_changed_pending_prefix(self):
+        prior = bridge.propose(self.project, self.input(self.proposal()))
+        bad_volume = self.proposal(1, 100)
+        bad_volume["chapters"][0]["title"] = "Rewritten without approval"
+        with self.assertRaisesRegex(ValueError, "khác"):
+            bridge.propose(self.project, self.input(bad_volume), volume=True, supersede=True)
+        self.assertEqual(bridge.read_json(Path(prior["path"]))["to"], 10)
+        self.assertFalse((self.vela / "story-bridge" / "history" / "outline").exists())
+
+    def test_single_100_chapter_volume_can_stage_when_no_pending(self):
+        result = bridge.propose(self.project, self.input(self.proposal(1, 100)), volume=True)
+        self.assertEqual(result["from"], 1)
+        self.assertEqual(result["to"], 100)
+        self.assertFalse(self.db.is_symlink())
+        self.assertEqual(bridge.read_json(Path(result["path"]))["kind"], "ssr-outline-volume-proposal")
+
+    def test_volume_can_fallback_when_windows_refuses_replace_existing(self):
+        from unittest.mock import patch
+        import os
+        prior = bridge.propose(self.project, self.input(self.proposal()))
+        pending = Path(prior["path"])
+        original_replace = os.replace
+        errors = []
+        def blocked_if_destination_exists(src, target):
+            if Path(target) == pending and pending.exists():
+                errors.append("windows existing target")
+                raise PermissionError("Windows won't replace existing file")
+            return original_replace(src, target)
+        with patch.object(bridge.os, "replace", side_effect=blocked_if_destination_exists):
+            staged = bridge.propose(self.project, self.input(self.proposal(1, 100)),
+                                    volume=True, supersede=True)
+        self.assertEqual(staged["to"], 100)
+        self.assertEqual(len(errors), 1)
+        self.assertTrue((pending.parent / ("superseded-" + prior["proposalId"] + ".json")).exists())
+        self.assertEqual(bridge.read_json(pending)["to"], 100)
+
 if __name__ == "__main__":
     unittest.main()
