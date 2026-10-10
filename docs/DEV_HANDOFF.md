@@ -82,3 +82,13 @@ Trên máy mới, chọn thư mục làm việc thích hợp; nếu có Git thì
 - Tài liệu kỹ thuật: `docs/SSR_STORY_BRIDGE_OUTLINE_BATCHES.md`.
 - Laptop nhà có bản nháp nội dung chương 1–10 `D:\1-tool\ssr-test1-outline-001-010-draft.json`, **không đưa lên GitHub**, chưa stage do Tiền đề và Xây dựng thế giới trong SQLite còn trống. User cần duyệt đề xuất v2 trước.
 - GitHub phía công ty đã có `.gitignore` không theo dõi `/SSR-truyen/`. Không đưa dữ liệu test-1 trong cả hai máy lên repo.
+
+## Nâng cấp duyệt 100 chương trong một lần (Quyển 1)
+
+- Branch stacked: `feat/story-bridge-volume-review` trên `feat/story-bridge-outline-batches`.
+- Cho phép gói `ssr-outline-volume-proposal` kết thúc tại chương 100, 200, v.v.; đề xuất 10 chương thường vẫn được hỗ trợ.
+- CLI: `scripts/ssr_outline_bridge.py propose-volume --supersede-pending`; trước khi thay pending 21–30, bắt buộc đối chiếu toàn bộ phần đầu, kiểm tra projectId/baseline và lập biên nhận `revision_requested` trong lịch sử để bảo toàn bằng chứng thay đổi phạm vi.
+- UI `Dàn ý ChatGPT` đọc từng trang 10 chương, nút duyệt một lần cho cả gói, bản chính thức và checkpoint AI nội bộ không bị viết lại.
+- Nội dung 21–100 (80 chương) nằm riêng bên ngoài GitHub tại `D:\1-tool\ssr-test1-outline-021-100-volume-draft.json`, không commit lên repo.
+- User yêu cầu **chỉ làm laptop ở nhà**; không đụng vào dữ liệu máy công ty cho đến khi có lệnh khác.
+- Thử nghiệm xuyên suốt trên bản sao trước merge, PR luôn Draft. Trình trạng được duyệt vẫn là 1–20 cho tới khi người dùng chấp nhận gói trên UI.

@@ -25,6 +25,7 @@ export default function StoryBridgeOutlineDialog({ isOpen, onClose, projectPath 
   const [message, setMessage] = useState('')
   const [conflict, setConflict] = useState('')
   const [busy, setBusy] = useState(false)
+  const [page, setPage] = useState(0)
 
   async function load() {
     const session = captureProjectSession(useProjectStore.getState().currentProject)
@@ -44,6 +45,7 @@ export default function StoryBridgeOutlineDialog({ isOpen, onClose, projectPath 
       )
       if (!isProjectSessionCurrent(session)) return
       if (!result.success) throw new Error(result.error)
+      setPage(0)
       setPending(result.pending ?? null)
       setHistory(result.history ?? [])
       setCoveredTo(result.coveredTo ?? 0)
@@ -119,7 +121,7 @@ export default function StoryBridgeOutlineDialog({ isOpen, onClose, projectPath 
     <Dialog open={isOpen} onOpenChange={open => { if (!open && !busy) onClose() }}>
       <DialogContent className="max-w-[820px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Dàn ý 10 chương/lần từ ChatGPT</DialogTitle>
+          <DialogTitle>Dàn ý ChatGPT · Duyệt từng đợt hoặc toàn quyển</DialogTitle>
           <DialogDescription>
             Xem xét từng đợt trước khi đưa vào lịch sử kế hoạch. Không ghi vào dàn ý SQLite hoặc sinh chương tự động.
           </DialogDescription>
@@ -140,8 +142,20 @@ export default function StoryBridgeOutlineDialog({ isOpen, onClose, projectPath 
               <h3 className="font-semibold">Đề xuất chương {pending.from}–{pending.to}</h3>
               {pending.note && <p className="text-xs whitespace-pre-wrap">{pending.note}</p>}
               {conflict && <p role="alert" className="text-sm text-amber-400">{conflict}</p>}
+              {pending.chapters.length > 10 && (
+                <div className="flex gap-2 items-center justify-between">
+                  <Button size="sm" variant="outline" disabled={busy || page === 0}
+                    onClick={() => setPage(x => Math.max(0,x-1))}>← 10 chương trước</Button>
+                  <span className="text-xs">{pending.from + page*10}–{Math.min(pending.to,pending.from + page*10 + 9)} / {pending.to}</span>
+                  <Button size="sm" variant="outline"
+                    disabled={busy || page >= Math.ceil(pending.chapters.length/10)-1}
+                    onClick={() => setPage(x => Math.min(Math.ceil(pending.chapters.length/10)-1,x+1))}>
+                    10 chương tiếp →
+                  </Button>
+                </div>
+              )}
               <div className="max-h-[46vh] space-y-2 overflow-y-auto">
-                {pending.chapters.map(chapter => (
+                {pending.chapters.slice(page*10,page*10+10).map(chapter => (
                   <section key={chapter.chapter} className="space-y-1 rounded-lg border border-[var(--color-border)] p-3">
                     <h4 className="font-semibold text-sm">Chương {chapter.chapter}: {chapter.title}</h4>
                     <p className="text-xs whitespace-pre-wrap">{chapter.summary}</p>
@@ -155,7 +169,7 @@ export default function StoryBridgeOutlineDialog({ isOpen, onClose, projectPath 
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button disabled={busy || !!conflict} onClick={() => void resolve('accepted')}>
-                  <Check size={14} /> Duyệt đợt {pending.from}–{pending.to}
+                  <Check size={14} /> Duyệt {pending.chapters.length} chương ({pending.from}–{pending.to})
                 </Button>
                 <Button variant="outline" disabled={busy} onClick={() => void resolve('rejected')}>
                   <X size={14} /> Từ chối

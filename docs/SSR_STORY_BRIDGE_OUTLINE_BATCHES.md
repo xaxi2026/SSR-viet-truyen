@@ -60,3 +60,22 @@ Ví dụ đầu vào:
 - Biên nhận review chống ghi đè; idempotent sau trường hợp đã archive nhưng chưa dọn pending.
 - Chưa có luồng chuyển các batch đã duyệt sang `project_core.synopsis` / `partial_arch.json`. Cần thiết kế bridge riêng có thể tái tạo checkpoint nhất quán và bằng chứng provenance trước khi tích hợp, không dùng `db:project-core-update` tùy tiện.
 - Cần thử GUI Electron thật trên Windows trước khi merge. Chưa triển khai tự viết hàng trăm chương qua đêm.
+
+## Chế độ duyệt một lần theo quyển (100 chương)
+
+**Dùng khi tác giả chủ động yêu cầu gộp công việc trong một quyển.** Ví dụ đã duyệt 1–20, sẽ chuẩn bị bản 21–100 và cho tác giả duyệt **80 chương trong một lần**. Đây chỉ là dàn ý kế hoạch; không tạo ra 80 chương văn xuôi hay nhập vào `project_core.synopsis`.
+
+```powershell
+# Trên máy được phép làm việc, sau khi đã viết và kiểm tra JSON 21–100
+python scripts/ssr_outline_bridge.py propose-volume --project "D:\\SSR-truyen test\\test-1" --input "D:\\1-tool\\ssr-test1-outline-021-100-volume-draft.json" --supersede-pending
+```
+
+- `propose` cũ vẫn **giới hạn 10 chương**. `propose-volume` cho phép tối đa 100, phải kết thúc tại ranh giới quyển 100/200/... (hoặc chương cuối tác phẩm).
+- Chế độ `--supersede-pending` chỉ được phép khi bản chờ cũ (vd. 21–30) trùng chính xác **toàn bộ chương đầu** của gói mới, dự án và snapshot canon trùng, và vẫn là pending. Bản cũ được lưu nguyên trong lịch sử với trạng thái `revision_requested` và lý do gộp theo yêu cầu của tác giả; không xóa lặng lẽ.
+- Đọc trong ứng dụng qua **Cấu trúc truyện → Dàn ý ChatGPT → Kiểm tra đề xuất**; khi có hơn 10 chương, giao diện hiển thị các trang 10 chương. Chỉ **một lần duyệt** sẽ thêm cả gói vào lịch sử duyệt; nếu từ chối hoặc yêu cầu sửa thì cả gói vẫn chưa được công nhận.
+- Khi duyệt, main process vẫn xác minh phiên dự án, ID, baseline canon, thứ tự, nguồn dữ kiện đã được duyệt trước và `previousAcceptedId`. Không có bất kỳ thao tác nào ghi SQLite hoặc checkpoint `partial_arch.json` do duyệt gói.
+- Gói đang chờ không tự chạy qua đêm, không tự được duyệt, không thể thay chương văn xuôi đã viết.
+
+### Trạng thái thử nghiệm riêng trên laptop nhà
+
+Dữ liệu thử `test-1` và các bản nháp JSON chỉ được lưu trên laptop nhà `nghia`. Mã nguồn trên GitHub **không chứa nội dung truyện**. Khi cần đồng bộ máy công ty, phải có yêu cầu riêng của tác giả. Không tự copy truyện hay file .vela sang đó.

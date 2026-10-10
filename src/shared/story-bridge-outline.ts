@@ -21,7 +21,7 @@ export interface OutlineChapter {
 }
 
 export interface OutlineBatchProposal {
-  kind: 'ssr-outline-batch-proposal'
+  kind: 'ssr-outline-batch-proposal' | 'ssr-outline-volume-proposal'
   schemaVersion: 1
   status: 'pending'
   proposalId: string
@@ -64,6 +64,7 @@ export interface OutlineResolveResult {
 }
 
 export const OUTLINE_BATCH_SPAN = 10
+export const OUTLINE_VOLUME_SPAN = 100
 const UUID = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/iu
 const record = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v)
@@ -71,14 +72,15 @@ const text = (v: unknown, limit: number, required = true): v is string =>
   typeof v === 'string' && v.length <= limit && (!required || !!v.trim())
 
 export function parseOutlineProposal(raw: unknown): OutlineBatchProposal {
-  if (!record(raw) || raw.kind !== 'ssr-outline-batch-proposal'
+  if (!record(raw) || !['ssr-outline-batch-proposal', 'ssr-outline-volume-proposal'].includes(String(raw.kind))
     || raw.schemaVersion !== 1 || raw.status !== 'pending'
     || !text(raw.proposalId, 36) || !UUID.test(raw.proposalId)
     || !text(raw.projectId, 180) || !text(raw.projectName, 300, false)
     || !text(raw.createdAt, 60) || !text(raw.note, 2000, false)
     || !Number.isSafeInteger(raw.from) || !Number.isSafeInteger(raw.to)
     || (raw.from as number) < 1 || (raw.to as number) < (raw.from as number)
-    || (raw.to as number) - (raw.from as number) >= OUTLINE_BATCH_SPAN
+    || (raw.to as number) - (raw.from as number) >= (raw.kind === 'ssr-outline-volume-proposal' ? OUTLINE_VOLUME_SPAN : OUTLINE_BATCH_SPAN)
+    || (raw.kind === 'ssr-outline-volume-proposal' && (raw.to as number) % OUTLINE_VOLUME_SPAN !== 0 && (raw.to as number) !== (raw.baseline as Record<string, unknown>)?.totalChapters)
     || !(raw.previousAcceptedId === null
       || (typeof raw.previousAcceptedId === 'string' && UUID.test(raw.previousAcceptedId)))
     || !record(raw.baseline) || !Array.isArray(raw.chapters)) {
