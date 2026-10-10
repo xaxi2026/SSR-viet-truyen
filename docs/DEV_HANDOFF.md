@@ -44,7 +44,7 @@ Bảo vệ dữ liệu: không tự viết đè chương hoặc nhân vật đã
 ```powershell
 cd "D:\1-tool\7-SSR-viet-truyen"
 git fetch origin
-git switch feat/story-bridge-characters-v0
+git switch feat/story-bridge-v2-architecture
 git pull --ff-only
 corepack pnpm install
 corepack pnpm dev
@@ -54,5 +54,22 @@ Trên máy mới, chọn thư mục làm việc thích hợp; nếu có Git thì
 
 ## Câu lệnh dùng trong ChatGPT ngày mai
 
-> Tiếp tục dự án SSR-viet truyen theo `docs/DEV_HANDOFF.md` trên nhánh `feat/story-bridge-characters-v0`. Hãy kiểm tra GitHub và máy được kết nối, sau đó triển khai trọn milestone Story Bridge v2 + Cấu trúc truyện trong một lượt làm việc; đừng dừng sau mỗi tính năng nhỏ. Chạy kiểm thử, tạo Draft PR, không tự sửa dữ liệu truyện đã duyệt. Thông báo chỉ khi có blocker hoặc cần tôi kiểm tra GUI.
+> Tiếp tục dự án SSR-viet truyen theo `docs/DEV_HANDOFF.md` trên nhánh `feat/story-bridge-characters-v0`. Hãy kiểm tra GitHub và máy được kết nối, xác minh Story Bridge v2, sau đó tiếp tục lập dàn ý 500 chương theo từng nhóm và triển khai các checkpoint; đừng dừng sau mỗi tính năng nhỏ. Chạy kiểm thử, tạo Draft PR, không tự sửa dữ liệu truyện đã duyệt. Thông báo chỉ khi có blocker hoặc cần tôi kiểm tra GUI.
 
+
+## Cập nhật mới nhất — Story Bridge v2 (2026-10-10)
+
+- Đã triển khai đề xuất/duyệt/lịch sử nhân vật với điều kiện toàn bộ hồ sơ đúng như đã lưu trong SQLite, sửa hoặc từ chối có phản hồi.
+- Đã triển khai \`inspect-architecture\` và \`propose-architecture\` trong CLI; tại UI Cấu trúc truyện có đề xuất, xem khác biệt, Chấp nhận và lưu, Từ chối, Yêu cầu sửa và lịch sử. Chỉ nhận \`premise\`, \`worldbuilding\`, \`synopsis\`; không viết trực tiếp bản chiếu \`charactersArch\`.
+- Duyệt cấu trúc thực hiện giao dịch SQLite có điều kiện (CAS), không ghi đè nếu dữ liệu nền đã thay đổi. Bản đang sửa chưa lưu trong tab được chặn.
+- Đã tạo đề xuất \`premise\` và \`worldbuilding\` cho \`test-1\`, ở trạng thái pending riêng trên máy nhà. Không tự apply.
+- Hướng dẫn cài ở máy công ty: \`docs/COMPANY_SETUP_VI.md\`.
+- Hướng dẫn kỹ thuật v2: \`docs/SSR_STORY_BRIDGE_V2.md\`.
+- Việc tiếp theo: kiểm thử giao diện Electron trực tiếp, hoàn thiện dàn ý theo từng nhóm chương, vận hành checkpoint truyện dài; không tự tuyên bố toàn bộ 500 chương đã được lập kế hoạch.
+
+## Kiểm thử hồi quy mở rộng (2026-10-10)
+
+- Đã chạy full `vitest run` trên laptop; phần lớn bài test được ghi nhận thành công nhưng lượt chạy không kết thúc đúng hạn. Log riêng trên máy nhà: `D:\1-tool\ssr_v2_full_suite.log`.
+- Một nhóm test nhập tài liệu 7/10 thất bại khi chạy chung vì `mainText` đọc ngôn ngữ UI đã lưu của laptop, khác locale mock `zh-CN` trong test. Đã sửa **chỉ trong test** để cô lập locale; chạy lại nhóm này 10/10 PASS.
+- V2 chuyên biệt: 18/18 Vitest, 8/8 Python, TypeScript, lint, i18n, build PASS. Khi làm tiếp, chạy full suite bằng worker limit hợp lý và ghi nhận các lỗi khác nếu có.
+- Không coi full regression PASS trước khi có kết quả cuối đầy đủ.

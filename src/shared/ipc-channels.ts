@@ -14,6 +14,7 @@ import type { ModelProviderResourceId } from './model-provider-resources'
 import type { WritingLanguage } from './writing-language'
 import type { DraftStatus } from './draft-status'
 import type { StoryBridgeResolveRequest, StoryBridgeResolveResponse, StoryBridgeHistoryResponse } from './story-bridge-review'
+import type { BridgeV2ResolveRequest, BridgeV2Result, BridgeV2HistoryResult } from './story-bridge-architecture'
 import type {
   RecoveryCandidate,
   RecoveryCandidateRecordInput,
@@ -1096,6 +1097,14 @@ export interface ChapterLifecycleChannels {
 
 // ===== SSR Story Bridge: project-scoped and reviewed =====
 export interface StoryBridgeChannels {
+  'story-bridge:v2:resolve': {
+    args: [kind: 'characters' | 'architecture', request: BridgeV2ResolveRequest, expectedProjectPath: string]
+    return: BridgeV2Result
+  }
+  'story-bridge:v2:history': {
+    args: [kind: 'characters' | 'architecture', expectedProjectPath: string]
+    return: BridgeV2HistoryResult
+  }
   'story-bridge:resolve': {
     args: [request: StoryBridgeResolveRequest, expectedProjectPath: string]
     return: StoryBridgeResolveResponse

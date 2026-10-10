@@ -29,7 +29,7 @@ class StoryBridgeTest(unittest.TestCase):
             defs = ", ".join(f"{c} TEXT" for c in bridge.DB_TO_UI
                 if c not in ("total_chapters", "words_per_chapter"))
             db.execute(f"CREATE TABLE project_core (id TEXT, project_name TEXT, "
-                       f"updated_at TEXT, total_chapters INTEGER, words_per_chapter INTEGER, {defs})")
+                       f"updated_at TEXT, premise TEXT DEFAULT '', worldbuilding TEXT DEFAULT '', synopsis TEXT DEFAULT '', total_chapters INTEGER, words_per_chapter INTEGER, {defs})")
             fields = [*bridge.DB_TO_UI, "id", "project_name", "updated_at"]
             values = [100 if x == "total_chapters"
                       else 3000 if x == "words_per_chapter"
@@ -138,6 +138,33 @@ class StoryBridgeTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             bridge.stage_characters(self.project, file)
         self.assertFalse((self.project / ".vela" / "story-bridge" / "pending-characters.json").exists())
+
+    def test_architecture_review_proposal_is_separate_from_sqlite(self):
+        before = self.dbfile.read_bytes()
+        state = bridge.inspect_architecture(self.project)
+        self.assertEqual(state["baseline"], {
+            "premise": "", "worldbuilding": "", "synopsis": ""
+        })
+        proposed = self._proposal({"premise": "Tiền đề được đề xuất."})
+        result = bridge.stage_architecture(self.project, proposed)
+        self.assertEqual(result["status"], "pending_review")
+        pending = json.loads(Path(result["path"]).read_text(encoding="utf8"))
+        self.assertEqual(pending["kind"], "ssr-architecture-proposal")
+        self.assertEqual(pending["baseline"]["synopsis"], "")
+        self.assertEqual(self.dbfile.read_bytes(), before)
+        with self.assertRaises(FileExistsError):
+            bridge.stage_architecture(self.project, proposed)
+
+    def test_architecture_proposal_rejects_unauthorized_fields(self):
+        for changes in (
+            {"charactersArch": "Fake"},
+            {"synopsis": ""},
+            {"premise": 12},
+            {"premise": "x" * 60001},
+        ):
+            with self.assertRaises(ValueError):
+                bridge.stage_architecture(self.project, self._proposal(changes))
+        self.assertFalse((self.project / ".vela" / "story-bridge").exists())
 
     def test_wrong_project_identity_blocked(self):
         data = self._proposal({"coreOutline": "Tóm lược"})

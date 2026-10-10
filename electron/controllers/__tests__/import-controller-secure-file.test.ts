@@ -20,6 +20,12 @@ vi.mock('electron', () => ({
   },
 }))
 
+// Isolate expected Chinese copy from the host machine's saved UI language.
+vi.mock('../../i18n', () => ({
+  mainText: (systemLocale: string, zhCN: string, enUS: string) =>
+    systemLocale.startsWith('zh') ? zhCN : enUS,
+}))
+
 import { registerImportController } from '../import-controller'
 import type { WindowsSafeFileSystem } from '../../security/windows-safe-file-system'
 import { nodeTestSecureFileSystem } from '../../../test/helpers/node-test-secure-file-system'
