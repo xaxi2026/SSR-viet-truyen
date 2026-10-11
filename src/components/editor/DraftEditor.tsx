@@ -6,6 +6,8 @@ import { registerEditorExitSaveHandler, useEditorStore } from '../../stores/edit
 import { useWorkflowStore } from '../../stores/workflow-store'
 import { useLocaleStore } from '../../stores/locale-store'
 import CodeMirrorEditor from './CodeMirrorEditor'
+import ManuscriptReader from './ManuscriptReader'
+import { BookOpen, Pencil } from 'lucide-react'
 import ThreeWayMerge from './ThreeWayMerge'
 import { Button } from '../ui/Button'
 import { toast } from '../ui/Toast'
@@ -93,6 +95,7 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
 
   // 后处理失败状态（用于控制是否展示修复按钮）
   const [hasProcessFailure, setHasProcessFailure] = useState(false)
+  const [readerMode, setReaderMode] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -411,6 +414,7 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
         draftPath: filePath,
         draftContent: snapshot.content,
         snapshot,
+        chatgptDeferred: currentProject?.novelConfig.writingLanguage === 'vi-VN',
       }, projectSession), false)
     } catch (e) {
       if (!isProjectSessionCurrent(projectSession)) return
@@ -448,6 +452,10 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
 
   /** 修复定稿后处理 — 只重跑失败的步骤 */
   const doRepairFinalize = useCallback(async (stepKey?: string) => {
+    if (currentProject?.novelConfig.writingLanguage === 'vi-VN' && stepKey !== 'kb_import') {
+      toast.warning('ChatGPT mode: local AI chapter notes and character cards are deferred; do not run Ollama repair.')
+      return
+    }
     const projectSession = captureProjectSession(currentProject)
     if (!projectMatches || !currentProject || !meta || isChapterBusy || !projectSession || !isProjectSessionPath(projectSession, projectKey)) return
     try {
@@ -800,6 +808,13 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
                 ? text('已定稿（只读）', 'Finalized (read-only)')
                 : text('已归档（只读）', 'Archived (read-only)')}
             </span>
+            {status === 'finalized' && (
+              <Button variant="outline" size="sm" onClick={() => setReaderMode(v => !v)}
+                title={readerMode ? 'Back to manuscript editor' : 'Read the finalized chapter'}>
+                {readerMode ? <Pencil size={12} /> : <BookOpen size={12} />}
+                {readerMode ? 'Bản thảo' : 'Đọc truyện'}
+              </Button>
+            )}
             {finalizationPending && (
               <Button
                 variant="outline"
@@ -812,7 +827,12 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
               </Button>
             )}
             {/* 已定稿 → 有失败项时显示修复定稿按钮 */}
-            {status === 'finalized' && meta && hasProcessFailure && (
+            {status === 'finalized' && currentProject?.novelConfig.writingLanguage === 'vi-VN' && (
+              <span className="text-xs opacity-75" title="Ghi chú và trạng thái nhân vật được ChatGPT đề xuất riêng; không chạy Ollama">
+                ChatGPT: ghi chú và nhân vật xử lý riêng
+              </span>
+            )}
+            {status === 'finalized' && meta && hasProcessFailure && currentProject?.novelConfig.writingLanguage !== 'vi-VN' && (
               <Button
                 variant="outline"
                 size="sm"
@@ -829,11 +849,11 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
       </div>
 
       {/* 后处理状态面板（仅定稿草稿显示） */}
-      {status === 'finalized' && meta && (
+      {status === 'finalized' && meta && !readerMode && (
         <div className="px-3 py-1.5" style={{ borderBottom: '1px solid var(--color-border)' }}>
           <PostProcessStatusPanel
             scope={getChapterFinalizeScope(meta.chapterNumber)}
-            onRetry={doRepairFinalize}
+            onRetry={currentProject?.novelConfig.writingLanguage === 'vi-VN' ? undefined : doRepairFinalize}
             onStatusLoad={setHasProcessFailure}
           />
         </div>
@@ -841,6 +861,9 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
 
       {/* 正文区 */}
       <div className="flex-1 overflow-hidden relative">
+        {readerMode && isReadonly ? (
+          <ManuscriptReader title={meta?.chapterTitle || `Chương ${meta?.chapterNumber ?? ''}`} content={content} />
+        ) : (
         <CodeMirrorEditor
           mode="prose"
           content={content}
@@ -854,8 +877,7 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
           }}
           onSave={(text) => doSave(text)}
         />
-
-
+        )}
       </div>
 
       {/* AI 操作确认弹窗（修稿含自定义提示词输入框） */}

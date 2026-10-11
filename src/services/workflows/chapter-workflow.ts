@@ -90,6 +90,8 @@ export interface ReviewOnlyParams {
 }
 
 export interface FinalizeOnlyParams {
+  /** Vietnamese ChatGPT mode: import knowledge only, defer model-derived notes/cards. */
+  chatgptDeferred?: boolean
   projectPath: string
   chapterNumber: number
   chapterTitle: string
@@ -444,6 +446,7 @@ export function createFinalizeWorkflow(
             chapterNumber: params.chapterNumber,
             chapterInfo,
             snapshot: params.snapshot,
+            chatgptDeferred: params.chatgptDeferred,
           })
           return cmd.execute({ step, context, callbacks })
         },

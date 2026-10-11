@@ -47,6 +47,8 @@ import { localize } from '../../../i18n/core'
 import type { Locale } from '../../../i18n/types'
 
 export interface FinalizeChapterParams {
+  /** Keep finalized text and KB authoritative; ChatGPT updates notes/cards separately. */
+  chatgptDeferred?: boolean
   draftPath: string
   draftContent: string
   chapterNumber: number
@@ -590,7 +592,12 @@ export class RunFinalizePostProcessCommand extends BaseWorkflowCommand<PostProce
     return this.executeWithGenerationRuntime('structured', params, () => this.executeWithinGeneration(params))
   }
 
-  private async executeWithinGeneration({ context, callbacks }: CommandExecuteParams): Promise<PostProcessStatus> {
+  /** Explicit ChatGPT mode: no provider lease, LLM call, or notes/cards mutation. */
+  async executeKnowledgeOnly(params: CommandExecuteParams): Promise<PostProcessStatus> {
+    return this.executeWithinGeneration(params, true)
+  }
+
+  private async executeWithinGeneration({ context, callbacks }: CommandExecuteParams, knowledgeOnly = false): Promise<PostProcessStatus> {
     const projectSession = requireWorkflowProjectSession(context)
     const finalizedSource = await ipc.invokeWithProjectSession(
       projectSession,
@@ -613,7 +620,9 @@ export class RunFinalizePostProcessCommand extends BaseWorkflowCommand<PostProce
       ))
     }
     const generation: FinalizePostProcessGeneration = {
-      complete: async (builder, stepCallbacks, output, generationContext) => this.callLLM(
+      complete: async (builder, stepCallbacks, output, generationContext) => {
+        if (knowledgeOnly) throw new Error('Local AI is disabled for ChatGPT-deferred post-processing')
+        return this.callLLM(
         builder.build(),
         builder.getSystemRole(),
         output === 'structured-data'
@@ -625,7 +634,8 @@ export class RunFinalizePostProcessCommand extends BaseWorkflowCommand<PostProce
           reasoningStage: 'review',
         },
         generationContext,
-      ),
+        )
+      },
     }
     const allSteps = buildFinalizePostProcessSteps(
       this.params.project,
@@ -639,9 +649,11 @@ export class RunFinalizePostProcessCommand extends BaseWorkflowCommand<PostProce
       this.params.finalizedSource,
       frozen.projectionGeneration,
     )
-    const steps = this.params.stepKey
-      ? allSteps.filter(step => step.key === this.params.stepKey)
-      : allSteps
+    const steps = knowledgeOnly
+      ? allSteps.filter(step => step.key === 'kb_import')
+      : this.params.stepKey
+        ? allSteps.filter(step => step.key === this.params.stepKey)
+        : allSteps
     if (this.params.stepKey && steps.length === 0) {
       throw new Error(workflowUiText(
         context,
@@ -761,7 +773,7 @@ export class FinalizeChapterCommand extends BaseWorkflowCommand<void> {
           snapshot.chapterNumber,
           project.path,
         ))?.characters ?? []
-    const postProcessStatus = await new RunFinalizePostProcessCommand({
+    const postProcessCommand = new RunFinalizePostProcessCommand({
       project,
       chapterNumber: snapshot.chapterNumber,
       chapterTitle: snapshot.chapterTitle,
@@ -776,7 +788,10 @@ export class FinalizeChapterCommand extends BaseWorkflowCommand<void> {
       sourceLabel,
       stopOnFailure: this.params.stopOnPostProcessFailure,
       chapterEntities,
-    }).execute({ step: {}, context, callbacks })
+    })
+    const postProcessStatus = this.params.chatgptDeferred
+      ? await postProcessCommand.executeKnowledgeOnly({ step: {}, context, callbacks })
+      : await postProcessCommand.execute({ step: {}, context, callbacks })
     this.assertNotCancelled(context)
 
     if (this.params.stopOnPostProcessFailure) {

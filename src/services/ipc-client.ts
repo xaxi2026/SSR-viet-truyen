@@ -64,6 +64,7 @@ function isProjectScopedChannel(channel: string): boolean {
     || channel === 'project:save'
     || channel === 'project:update-config'
     || channel === 'project:delete'
+    || channel === 'project:backup-current'
     || channel.startsWith('story-bridge:')
 }
 
