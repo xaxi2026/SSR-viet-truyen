@@ -16,7 +16,7 @@ async function fixture() {
   const project = path.join(root, 'novel')
   await fs.mkdir(path.join(project, '.vela'), { recursive: true })
   await fs.writeFile(path.join(project, '.vela', 'project.json'), '{"projectId":"synthetic"}')
-  await fs.writeFile(path.join(project, 'Chapter 1.txt'), 'Đêm Bến Khô mất tên', 'utf8')
+  await fs.writeFile(path.join(project, 'Chapter 1.txt'), 'Đoạn văn thử nghiệm không liên quan đến truyện.', 'utf8')
   const dbFile = path.join(project, '.vela', 'vela.db')
   await fs.writeFile(dbFile, Buffer.alloc(4096, 17))
   const db = { backup: async (destination: string) => fs.copyFile(dbFile, destination), close: () => undefined }
@@ -50,7 +50,7 @@ describe('SSR GUI project archive writer', () => {
       const manifest = JSON.parse(entries['ssr-backup-manifest.json'].toString('utf8'))
       expect(manifest.schema).toBe('ssr-project-archive-v1')
       expect(manifest.files).toHaveProperty('.vela/vela.db')
-      expect(entries['Chapter 1.txt'].toString('utf8')).toBe('Đêm Bến Khô mất tên')
+      expect(entries['Chapter 1.txt'].toString('utf8')).toBe('Đoạn văn thử nghiệm không liên quan đến truyện.')
       expect(entries['.vela/vela.db'].length).toBeGreaterThan(100)
       expect(entries).not.toHaveProperty('.vela/vela.db-shm')
     } finally {
