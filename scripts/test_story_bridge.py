@@ -40,6 +40,9 @@ class StoryBridgeTest(unittest.TestCase):
                       else "" for x in fields]
             db.execute("INSERT INTO project_core (" + ",".join(fields) + ") VALUES ("
                        + ",".join("?" for _ in fields) + ")", values)
+            db.execute("CREATE TABLE character_roster_meta (revision INTEGER)")
+            db.execute("INSERT INTO character_roster_meta (revision) VALUES (0)")
+            db.execute("CREATE TABLE characters (name TEXT NOT NULL)")
             db.commit()
 
     def _proposal(self, changes):
@@ -97,6 +100,44 @@ class StoryBridgeTest(unittest.TestCase):
         self.assertEqual(result["history"][0]["status"], "revision_requested")
         self.assertEqual(result["history"][0]["feedback"], "Đổi động cơ nhân vật chính.")
         self.assertEqual(self.dbfile.read_bytes(), before)
+
+    def test_character_proposal_is_readonly_and_blocks_duplicates(self):
+        before = self.dbfile.read_bytes()
+        card = {key: "" for key in bridge.CHARACTER_FIELDS}
+        card.update(name="Lục Hoài An", role="protagonist", age="19",
+                    motivation="Đi tìm thôn bị xóa khỏi sử sách.")
+        inp = Path(self.dir.name) / "characters.json"
+        inp.write_text(json.dumps({
+            "projectId": self.project_id, "characters": [card], "note": "Thử nghiệm."
+        }, ensure_ascii=False), encoding="utf8")
+        state = bridge.inspect_characters(self.project)
+        self.assertEqual(state["rosterRevision"], 0)
+        result = bridge.stage_characters(self.project, inp)
+        self.assertEqual(result["characters"], ["Lục Hoài An"])
+        self.assertEqual(self.dbfile.read_bytes(), before)
+        self.assertEqual(json.loads(Path(result["path"]).read_text(encoding="utf8"))["rosterRevision"], 0)
+        with self.assertRaises(FileExistsError):
+            bridge.stage_characters(self.project, inp)
+
+    def test_character_proposal_rejects_unknown_fields_and_existing_names(self):
+        card = {key: "" for key in bridge.CHARACTER_FIELDS}
+        card.update(name="Lục Hoài An", role="protagonist")
+        file = Path(self.dir.name) / "characters.json"
+        def write(values):
+            file.write_text(json.dumps({"projectId": self.project_id, "characters": values},
+                                      ensure_ascii=False), encoding="utf8")
+        for bad in [{**card, "role": "admin"}, {**card, "relationships": "AI guessed"},
+                    {**card, "unsupportedField": "x"}, {**card, "name": ""}]:
+            write([bad])
+            with self.assertRaises(ValueError):
+                bridge.stage_characters(self.project, file)
+        with closing(sqlite3.connect(self.dbfile)) as db:
+            db.execute("INSERT INTO characters(name) VALUES (?)", ("Lục Hoài An",))
+            db.commit()
+        write([card])
+        with self.assertRaises(ValueError):
+            bridge.stage_characters(self.project, file)
+        self.assertFalse((self.project / ".vela" / "story-bridge" / "pending-characters.json").exists())
 
     def test_wrong_project_identity_blocked(self):
         data = self._proposal({"coreOutline": "Tóm lược"})

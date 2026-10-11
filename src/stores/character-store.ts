@@ -11,6 +11,8 @@ import type {
   CharacterStateData,
 } from '../../electron/repositories/character-repository'
 import { normalizeCharacterRole } from '../shared/character-role'
+import { characterRosterIdentityKey } from '../shared/character-roster'
+import type { StoryBridgeCharacter } from '../shared/story-bridge-characters'
 import {
   characterCardFromRosterEntry,
   characterRosterEntriesFromCards,
@@ -198,6 +200,7 @@ interface CharacterState {
   reset: () => void
   setSelectedName: (name: string | null) => void
   addCharacter: () => void
+  addBridgeCharacters: (cards: readonly StoryBridgeCharacter[], projectPath: string, expectedRevision: number) => boolean
   deleteCharacter: (
     name: string,
     projectPath?: string,
@@ -425,6 +428,35 @@ export const useCharacterStore = create<CharacterState>()((set, get) => ({
       before,
       get().characters,
     ))
+  },
+
+  /** Import only new character proposals into the draft ledger; never commit to SQLite. */
+  addBridgeCharacters: (cards, projectPath, expectedRevision) => {
+    const session = currentCharacterProjectSession(projectPath)
+    const state = get()
+    if (!session
+      || !sameProjectSessionContext(state.dataProjectSession, session)
+      || state.loadingProjectSession !== null || state.lastError !== null
+      || state.saving || state.identityBusy || characterSaveInFlight
+      || characterIdentityMutationInFlight
+      || state.rosterRevision !== expectedRevision
+      || cards.length === 0 || cards.length > 12) return false
+    const existing = new Set(state.characters.map(card => characterRosterIdentityKey(card.name)))
+    for (const card of cards) {
+      const identity = characterRosterIdentityKey(card.name)
+      if (!identity || existing.has(identity)) return false
+      existing.add(identity)
+    }
+    const cardsToAdd = cards.map(card => ({ ...EMPTY_CARD, ...card }))
+    const next = [...state.characters, ...cardsToAdd]
+    set({ characters: next, selectedName: cardsToAdd[0].name })
+    persistCharacterDraftLedger(recordProjectEditorEdit(
+      readCharacterDraftLedger(projectPath),
+      projectPath,
+      state.characters,
+      next,
+    ))
+    return true
   },
 
   deleteCharacter: (name, projectPath, expectedProjectSession) => {

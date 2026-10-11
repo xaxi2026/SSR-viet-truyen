@@ -11,6 +11,7 @@ import {
   type CharacterCurrentState,
 } from '../../stores/character-store'
 import RelationshipGraph from './RelationshipGraph'
+import StoryBridgeCharactersDialog from '../dialogs/StoryBridgeCharactersDialog'
 import { EmptyState as BaseEmptyState } from '../ui/EmptyState'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
@@ -49,6 +50,7 @@ export default function CharacterEditor({ projectKey }: { projectKey: string }) 
   const clearAllCharacters = useCharacterStore(s => s.clearAllCharacters)
   const saveAll = useCharacterStore(s => s.saveAll)
   const [viewMode, setViewMode] = useState<'edit' | 'state' | 'graph'>('edit')
+  const [showBridgeCharacters, setShowBridgeCharacters] = useState(false)
   const text = useLocaleStore(s => s.text)
   const locale = useLocaleStore(s => s.locale)
   const roleLabel = (role: CharacterCard['role']) => {
@@ -197,6 +199,10 @@ export default function CharacterEditor({ projectKey }: { projectKey: string }) 
         </div>
         
         <div className="flex items-center gap-1.5 flex-shrink-0">
+          <Button variant="outline" size="sm" disabled={!dataReady || saving || identityBusy}
+            onClick={() => setShowBridgeCharacters(true)}>
+            Đề xuất từ ChatGPT
+          </Button>
           {viewMode === 'graph' ? (
             <>
               <Button
@@ -241,6 +247,11 @@ export default function CharacterEditor({ projectKey }: { projectKey: string }) 
         </div>
       </div>
 
+      <StoryBridgeCharactersDialog
+        isOpen={showBridgeCharacters}
+        onClose={() => setShowBridgeCharacters(false)}
+        projectPath={projectKey}
+      />
       {/* 主体区 */}
       <div className="flex-1 overflow-y-auto relative">
         {viewMode === 'graph' ? (

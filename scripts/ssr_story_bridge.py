@@ -161,19 +161,106 @@ def history(project):
     entries.sort(key=lambda item: item["resolvedAt"], reverse=True)
     return {"projectId": baseline["projectId"], "history": entries[:30]}
 
+CHARACTER_FIELDS = (
+    "name", "role", "gender", "age", "appearance", "personality",
+    "background", "abilities", "motivation", "relationships", "arc", "notes",
+)
+CHARACTER_ROLES = frozenset(("protagonist", "supporting", "antagonist", "minor"))
+
+
+def inspect_characters(project):
+    identity = snapshot(project)
+    db_path = Path(identity["projectPath"]) / ".vela" / "vela.db"
+    with closing(sqlite3.connect(db_path.as_uri() + "?mode=ro", uri=True, timeout=5)) as db:
+        db.execute("PRAGMA query_only=ON")
+        revision = db.execute("SELECT revision FROM character_roster_meta LIMIT 1").fetchone()
+        existing = [row[0] for row in db.execute("SELECT name FROM characters ORDER BY name")]
+    if revision is None or not isinstance(revision[0], int):
+        raise ValueError("Danh sách nhân vật chưa được khởi tạo.")
+    return {
+        "projectId": identity["projectId"],
+        "projectName": identity["projectName"],
+        "rosterRevision": revision[0],
+        "existingNames": existing,
+    }
+
+
+def stage_characters(project, source):
+    state = inspect_characters(project)
+    proposal = read_json(source)
+    if proposal.get("projectId") != state["projectId"]:
+        raise ValueError("Đề xuất nhân vật thuộc dự án khác.")
+    cards = proposal.get("characters")
+    if not isinstance(cards, list) or not (1 <= len(cards) <= 12):
+        raise ValueError("Cần từ 1 đến 12 hồ sơ nhân vật.")
+    seen = {name.strip().casefold() for name in state["existingNames"]}
+    approved = []
+    for card in cards:
+        if not isinstance(card, dict) or set(card) != set(CHARACTER_FIELDS):
+            raise ValueError("Hồ sơ nhân vật thiếu hoặc dư trường.")
+        if not isinstance(card["role"], str) or card["role"] not in CHARACTER_ROLES:
+            raise ValueError("Vai trò nhân vật không hợp lệ.")
+        if any(not isinstance(card[key], str) or len(card[key]) > 8000
+               for key in CHARACTER_FIELDS if key != "role"):
+            raise ValueError("Thông tin nhân vật phải là văn bản hợp lệ.")
+        name = card["name"]
+        if not name.strip() or len(name) > 100 or name != name.strip():
+            raise ValueError("Tên nhân vật không hợp lệ.")
+        if card["relationships"] != "":
+            raise ValueError("Bản thử đầu chưa nhận quan hệ; dùng ghi chú hoặc hồ sơ riêng.")
+        unique = name.casefold()
+        if unique in seen:
+            raise ValueError("Nhân vật bị trùng tên với nhau hoặc với dữ liệu đã lưu.")
+        seen.add(unique)
+        approved.append(card)
+    note = proposal.get("note", "")
+    if not isinstance(note, str) or len(note) > 2000:
+        raise ValueError("Ghi chú không hợp lệ.")
+    directory = Path(snapshot(project)["projectPath"]) / ".vela" / "story-bridge"
+    if directory.is_symlink():
+        raise ValueError("Không hỗ trợ thư mục cầu nối là symlink.")
+    directory.mkdir(mode=0o700, exist_ok=True)
+    pending = directory / "pending-characters.json"
+    receipt = {
+        "kind": "ssr-characters-proposal",
+        "schemaVersion": 1,
+        "proposalId": str(uuid4()),
+        "projectId": state["projectId"],
+        "projectName": state["projectName"],
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+        "status": "pending",
+        "rosterRevision": state["rosterRevision"],
+        "note": note,
+        "characters": approved,
+    }
+    raw = json.dumps(receipt, ensure_ascii=False, indent=2)
+    if len(raw.encode("utf-8")) > MAX_FILE_BYTES:
+        raise ValueError("Đề xuất nhân vật vượt kích thước cho phép.")
+    with pending.open("x", encoding="utf-8") as f:
+        f.write(raw)
+        f.flush()
+        os.fsync(f.fileno())
+    return {"status": "pending_review", "proposalId": receipt["proposalId"],
+            "characters": [card["name"] for card in approved], "path": str(pending)}
+
+
 def main():
     parser = argparse.ArgumentParser(description="SSR Story Bridge — staged, review-only configuration proposals")
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("inspect", "propose", "history"):
+    for name in ("inspect", "propose", "history", "inspect-characters", "propose-characters"):
         cmd = commands.add_parser(name)
         cmd.add_argument("--project", required=True, type=Path)
-        if name == "propose":
+        if name in ("propose", "propose-characters"):
             cmd.add_argument("--input", required=True, type=Path)
     args = parser.parse_args()
     if args.command == "inspect":
         result = snapshot(args.project)
     elif args.command == "history":
         result = history(args.project)
+    elif args.command == "inspect-characters":
+        result = inspect_characters(args.project)
+    elif args.command == "propose-characters":
+        result = stage_characters(args.project, args.input)
     else:
         result = stage(args.project, args.input)
     print(json.dumps(result, ensure_ascii=False, indent=2))
