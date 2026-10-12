@@ -2,11 +2,13 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { Sparkles, Search, BadgeCheck, Save, FileStack, FileText, Wrench, Check } from 'lucide-react'
 
 import { useProjectStore } from '../../stores/project-store'
+import { useDraftStore } from '../../stores/draft-store'
 import { registerEditorExitSaveHandler, useEditorStore } from '../../stores/editor-store'
 import { useWorkflowStore } from '../../stores/workflow-store'
 import { useLocaleStore } from '../../stores/locale-store'
 import CodeMirrorEditor from './CodeMirrorEditor'
 import ManuscriptReader from './ManuscriptReader'
+import { readerAdjacentChapters } from './reader-navigation'
 import { BookOpen, Pencil } from 'lucide-react'
 import ThreeWayMerge from './ThreeWayMerge'
 import { Button } from '../ui/Button'
@@ -77,6 +79,8 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
     state => state.tabs.find(tab => tab.id === tabId && tab.projectKey === projectKey),
   )
   const currentProject = useProjectStore(s => s.currentProject)
+  const draftsByChapter = useDraftStore(s => s.draftsByChapter)
+  const draftsDataProjectKey = useDraftStore(s => s.dataProjectKey)
   const text = useLocaleStore(s => s.text)
   const locale = useLocaleStore(s => s.locale)
   const projectMatches = currentProject?.path === projectKey
@@ -95,7 +99,25 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
 
   // 后处理失败状态（用于控制是否展示修复按钮）
   const [hasProcessFailure, setHasProcessFailure] = useState(false)
-  const [readerMode, setReaderMode] = useState(false)
+  const [readerMode, setReaderMode] = useState(() => {
+    try { return sessionStorage.getItem(`ssr.reader.mode:${projectKey}`) === '1' } catch { return false }
+  })
+  const toggleReaderMode = () => setReaderMode(value => {
+    const next = !value
+    try { sessionStorage.setItem(`ssr.reader.mode:${projectKey}`, next ? '1' : '0') } catch { /* local only */ }
+    return next
+  })
+  const { previous: previousChapter, next: nextChapter } = readerAdjacentChapters(
+    draftsByChapter, draftsDataProjectKey === projectKey, filePath,
+  )
+  const navigateReaderChapter = (draftId: number, chapterNumber: number, chapterTitle: string) => {
+    const session = captureProjectSession(useProjectStore.getState().currentProject)
+    if (!session || !isProjectSessionPath(session, projectKey)) return
+    void import('../panels/sidebar/sidebar-file-openers').then(({ openChapterFile }) => {
+      if (!isProjectSessionCurrent(session)) return
+      void openChapterFile(`vela://manuscript/${draftId}`, `Chương ${chapterNumber} ${chapterTitle}`)
+    })
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -809,7 +831,7 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
                 : text('已归档（只读）', 'Archived (read-only)')}
             </span>
             {status === 'finalized' && (
-              <Button variant="outline" size="sm" onClick={() => setReaderMode(v => !v)}
+              <Button variant="outline" size="sm" onClick={toggleReaderMode}
                 title={readerMode ? 'Back to manuscript editor' : 'Read the finalized chapter'}>
                 {readerMode ? <Pencil size={12} /> : <BookOpen size={12} />}
                 {readerMode ? 'Bản thảo' : 'Đọc truyện'}
@@ -862,7 +884,19 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
       {/* 正文区 */}
       <div className="flex-1 overflow-hidden relative">
         {readerMode && isReadonly ? (
-          <ManuscriptReader title={meta?.chapterTitle || `Chương ${meta?.chapterNumber ?? ''}`} content={content} />
+          <ManuscriptReader
+            title={meta?.chapterTitle || `Chương ${meta?.chapterNumber ?? ''}`}
+            content={content}
+            identity={`${projectKey}:${filePath}`}
+            previous={previousChapter ? {
+              label: `Chương ${previousChapter.chapterNumber} ${previousChapter.chapterTitle ?? ''}`,
+              onClick: () => navigateReaderChapter(previousChapter.id, previousChapter.chapterNumber, previousChapter.chapterTitle ?? ''),
+            } : undefined}
+            next={nextChapter ? {
+              label: `Chương ${nextChapter.chapterNumber} ${nextChapter.chapterTitle ?? ''}`,
+              onClick: () => navigateReaderChapter(nextChapter.id, nextChapter.chapterNumber, nextChapter.chapterTitle ?? ''),
+            } : undefined}
+          />
         ) : (
         <CodeMirrorEditor
           mode="prose"

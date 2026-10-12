@@ -1,5 +1,7 @@
 # PR #13 — Windows acceptance evidence (2026-10-12)
 
+**Update:** this is the initial foundations acceptance record. GUI Restore and Reader improvements were subsequently implemented and verified; see [Restore & Reader follow-up](PR13_RESTORE_READER_ACCEPTANCE_2026-10-12.md) for the current status and outstanding gates.
+
 **Target:** personal laptop `nghia`; branch `feat/chatgpt-workspace-foundations-20261011`; base commit `7bdc628`.
 **Scope:** SSR-viet-truyen foundations only; no master merge, company computer, cloud copy of private fiction, or generation of actual additional test-1 chapters.
 
