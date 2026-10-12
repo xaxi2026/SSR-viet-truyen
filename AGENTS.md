@@ -6,6 +6,15 @@
 - Repository slug: `xaxi2026/SSR-viet-truyen` (forked from EthanYoQ/AI-Novel-Writer).
 - Keep attribution to upstream `EthanYoQ/AI-Novel-Writer`; do not relabel upstream code as original.
 
+## When ChatGPT starts a NEW novel in a NEW conversation
+
+- **ENTRYPOINT:** `CHATGPT_START_HERE.md` and `docs/CHATGPT_NEW_NOVEL_PLAYBOOK.md`. Read these before creating any story project or assuming prior-chat context.
+- This repository supplies code/instructions, **not** author-private story databases. New chats must identify the authorized device/project and verify the actual persisted state; they never inherit access to a computer or novel merely by reading GitHub.
+- A new story is a fresh SSR project with its own project ID. Do not clone another story's `.vela`, assume existing outlines belong to the new story, or touch the user's existing story without separate authorization.
+- ChatGPT proposes, the author reviews and confirms; do not autonomously import native drafts, approve outlines, finalize chapters, or turn speculative facts into canon.
+- Respect real implementation boundaries, particularly Story Bridge pending proposals versus approved state and batch staging versus native DraftRepository. Never claim a roadmap design is already implemented.
+- For the first message in a new chat, ask for the user's **new story premise/genre** or offer ideas; establish Creative Brief, then get explicit consent for creating the new project with a selected parent directory. No invented paths or implicit device changes.
+
 ## Mission
 
 Extend upstream AI Novel Writer to Vietnamese without regressing Chinese/English flows. Distinguish `uiLocale` from per-project `writingLanguage`; Vietnamese support is not complete until both work and all core workflow prompts are Vietnamese-native.

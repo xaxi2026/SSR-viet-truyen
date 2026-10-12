@@ -4,6 +4,14 @@
 
 [`handoffs/2026-09-05-astra-code-review.md`](handoffs/2026-09-05-astra-code-review.md) 是固定到提交 `7ea4d96` 的历史审查快照，记录当时的比较基线、实现提交、两批开发历史、Bug 台账、真实验收和审查顺序；后续审查必须以当前分支代码和测试为准，不能把该快照或其他 README、ADR、旧 handoff 单独当作当前行为证据。
 
+## SSR-viet-truyen: ChatGPT tạo truyện mới
+
+- [Điểm khởi động cuộc trò chuyện ChatGPT mới](../CHATGPT_START_HERE.md)
+- [Quy trình tạo truyện mới và các bước tác giả duyệt](CHATGPT_NEW_NOVEL_PLAYBOOK.md)
+
+Hai tài liệu này là **hướng dẫn vận hành cho ChatGPT khi được yêu cầu**,
+không phải dữ liệu một truyện cụ thể, cũng không tự cấp quyền truy cập máy tính.
+
 ## 文档权威层级
 
 | 文档 | 用途 | 权威与生命周期 |
@@ -16,7 +24,7 @@
 | [`docs/handoffs/`](handoffs/) | 指定分支或任务的交接快照 | 有日期的任务状态；完成或分支变化后可能过时 |
 | [`plugins/dsh-ai-novel-writer/`](../plugins/dsh-ai-novel-writer/) | DeepSeek Harness 插件的独立使用与开发说明 | 由插件包维护，不替代桌面版文档 |
 
-根目录 `AGENTS.md` 与 `CONTEXT.md` 是可选的本机 Agent 上下文，按仓库卫生规则保持忽略，不是公共文档，也不能覆盖 [`docs/product-domain.md`](product-domain.md) 或 ADR。需要进入公共仓库的稳定产品边界写入领域词汇表或 ADR；公开用户行为同步到中英文 README。
+此 fork 的根目录 [`AGENTS.md`](../AGENTS.md) 已作为 ChatGPT/Agent 的版本化公开说明，新增 [`CHATGPT_START_HERE.md`](../CHATGPT_START_HERE.md) 作为新会话入口。私有 `CONTEXT.md` 仍只用于本机上下文，不得提交。Agent 说明不能覆盖 [`docs/product-domain.md`](product-domain.md) 或 ADR；需要公开的稳定产品边界仍应写入领域词汇表或 ADR，用户行为要与 README 维护一致。
 
 ## 已取代的决定
 
