@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties, type MouseEvent } from 'react'
 import {
   Archive,
   CheckCircle2,
+  RotateCcw,
   FilePlus2,
   FolderOpen,
   Import,
@@ -23,6 +24,8 @@ import { useProjectStore } from '../../stores/project-store'
 import { useWorkflowStore } from '../../stores/workflow-store'
 import { useThemeStore, type Theme } from '../../stores/theme-store'
 import { useEditorStore } from '../../stores/editor-store'
+import { captureProjectSession } from '../project-session-gate'
+import { toast } from '../ui/Toast'
 import { saveDirtyEditorChangesForExit } from '../../stores/editor-store'
 import { countUnsavedEditorItems } from '../../stores/editor-unsaved'
 import { discardAllEditorChanges } from '../../stores/editor-discard'
@@ -37,6 +40,7 @@ import {
 } from '../ui/Dialog'
 import { Button } from '../ui/Button'
 import { alertError } from '../ui/AlertDialog'
+import { confirm } from '../ui/Confirm'
 
 const isMac = navigator.userAgent.includes('Mac')
 
@@ -66,8 +70,52 @@ export default function TitleBar() {
   const openImportNovel = useLayoutStore(s => s.openImportNovel)
   const { locale, toggleLocale, t, text } = useLocaleStore()
   const [exitRequest, setExitRequest] = useState<{ requestId: string; workflowBlocked?: boolean } | null>(null)
+  const [backupBusy, setBackupBusy] = useState(false)
+  const [restoreBusy, setRestoreBusy] = useState(false)
   const [exitBusy, setExitBusy] = useState(false)
   const [exitError, setExitError] = useState<string | null>(null)
+
+  const backupCurrentProject = async () => {
+    const session = captureProjectSession(currentProject)
+    if (!session || backupBusy || hasDirty) {
+      toast.warning('Lưu tất cả thay đổi trước khi sao lưu dự án.')
+      return
+    }
+    setBackupBusy(true)
+    try {
+      const result = await ipc.invokeWithProjectSession(session, 'project:backup-current')
+      if (result.success) toast.success(`Đã sao lưu: ${result.filename} (${result.files} file)`)
+      else if (!result.cancelled) toast.error(result.error || 'Không thể sao lưu dự án.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error))
+    } finally {
+      setBackupBusy(false)
+    }
+  }
+
+  const restoreFromZip = async () => {
+    if (restoreBusy) return
+    setRestoreBusy(true)
+    try {
+      const result = await ipc.invoke('project:restore-from-zip')
+      if (!result.success) {
+        if (!result.cancelled) toast.error(result.error || 'Không thể khôi phục dự án.')
+        return
+      }
+      const projectPath = result.projectPath
+      if (!projectPath) throw new Error('Khôi phục thành công nhưng không có đường dẫn dự án')
+      toast.success(`Đã khôi phục ${result.files} file vào thư mục mới.`)
+      const approved = await confirm(
+        `Dự án được khôi phục tại:\n${projectPath}\n\nBạn có muốn mở dự án này ngay bây giờ?`,
+        { title: 'Khôi phục hoàn tất', confirmText: 'Mở dự án' },
+      )
+      if (approved) await openProject(projectPath)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error))
+    } finally {
+      setRestoreBusy(false)
+    }
+  }
 
   useEffect(() => ipc.on('window:close-requested', ({ requestId }) => {
     const projectPath = useProjectStore.getState().currentProject?.path
@@ -264,9 +312,15 @@ export default function TitleBar() {
 
         <div className="writer-command-divider h-5 w-px" />
 
-        <button className="writer-command-button" title={t('project.backupUnavailable')} disabled>
+        <button className="writer-command-button" title={text('Sao lưu dự án ra ZIP', 'Back up project to ZIP')}
+          onClick={() => void backupCurrentProject()} disabled={!currentProject || backupBusy || hasDirty}>
           <Archive size={14} strokeWidth={1.75} />
-          {t('common.backup')}
+          {backupBusy ? text('Đang sao lưu...', 'Backing up...') : t('common.backup')}
+        </button>
+        <button className="writer-command-button" title={text('Khôi phục dự án từ ZIP', 'Restore project from ZIP')}
+          onClick={() => void restoreFromZip()} disabled={restoreBusy}>
+          <RotateCcw size={14} strokeWidth={1.75} />
+          {restoreBusy ? text('Đang khôi phục...', 'Restoring...') : text('Khôi phục', 'Restore')}
         </button>
         <button className="writer-command-button" title={t('project.imitation')} onClick={openImportNovel}>
           <Import size={14} strokeWidth={1.75} />

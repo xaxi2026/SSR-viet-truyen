@@ -17,6 +17,7 @@ import { registerAppDataController } from './controllers/app-data-controller'
 import { registerSkinController } from './controllers/skin-controller'
 import { skinService } from './services/skin-service'
 import { registerStoryBridgeController } from './controllers/story-bridge-controller'
+import { registerProjectArchiveController } from './controllers/project-archive-controller'
 
 /**
  * 注册所有 IPC 通道 — 在主进程启动时调用
@@ -41,6 +42,7 @@ export function registerIPCHandlers() {
   registerConfigController()
   registerAppDataController()
   registerProjectController()
+  registerProjectArchiveController()
   registerStoryBridgeController()
   registerFSController()
   registerExternalFileGrantController()

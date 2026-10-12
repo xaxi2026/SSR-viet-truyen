@@ -241,6 +241,14 @@ export interface CreateProjectConfig {
 }
 
 export interface ProjectChannels {
+  'project:backup-current': {
+    args: []
+    return: { success: boolean; cancelled?: boolean; filename?: string; files?: number; error?: string }
+  }
+  'project:restore-from-zip': {
+    args: []
+    return: { success: boolean; cancelled?: boolean; projectPath?: string; files?: number; error?: string }
+  }
   'project:get-runtime-context': {
     args: []
     return: {

@@ -3,7 +3,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertTriangle, ChevronRight, ChevronDown, FileText, FolderOpen, Copy, PenTool, RotateCcw, Trash2 } from 'lucide-react'
+import { AlertTriangle, BookOpen, ChevronRight, ChevronDown, FileText, FolderOpen, Copy, PenTool, RotateCcw, Trash2 } from 'lucide-react'
 import type { FileNode, ProjectSessionContext } from '../../../shared/ipc-channels'
 import type { ChapterDeletionOperation } from '../../../shared/chapter-deletion'
 import { ipc } from '../../../services/ipc-client'
@@ -18,6 +18,7 @@ import {
 } from '../../project-session-gate'
 
 import { openChapterFile } from './sidebar-file-openers'
+import { getLastRead, READER_PROGRESS_EVENT } from '../../editor/reader-library'
 import { showSidebarMenu } from './sidebar-menu'
 import { chapterTitleCache, chapterTitleCacheKey } from './manuscript-title-cache'
 import {
@@ -104,6 +105,13 @@ export default function ManuscriptGroup({ files, projectPath }: { files: Manuscr
   const [open, setOpen] = useState(true)
   const text = useLocaleStore(s => s.text)
   const currentProject = useProjectStore(s => s.currentProject)
+  const [lastRead, setLastRead] = useState(() => getLastRead(projectPath))
+  useEffect(() => {
+    const update = () => setLastRead(getLastRead(projectPath))
+    update()
+    window.addEventListener(READER_PROGRESS_EVENT, update)
+    return () => window.removeEventListener(READER_PROGRESS_EVENT, update)
+  }, [projectPath])
   const [deletionState, setDeletionState] = useState<{
     projectPath: string
     operations: ChapterDeletionOperation[]
@@ -171,6 +179,18 @@ export default function ManuscriptGroup({ files, projectPath }: { files: Manuscr
 
   // 只显示正文章节（过滤掉旧的 _notes 文件）
   const chapterFiles = files.filter(f => !f.name.includes('_notes'))
+  const lastReadFile = chapterFiles.find(f => f.path === lastRead?.manuscriptPath)
+  const resumeFile = lastReadFile ?? chapterFiles[0]
+  const openForReading = async (file: ManuscriptFileNode) => {
+    const session = captureProjectSession(useProjectStore.getState().currentProject)
+    if (!session || !isProjectSessionPath(session, projectPath)) return
+    try { sessionStorage.setItem(`ssr.reader.mode:${projectPath}`, '1') } catch { /* local only */ }
+    await openChapterFile(file.path, getDisplay(file))
+    if (!isProjectSessionCurrent(session)) return
+    window.dispatchEvent(new CustomEvent('ssr:open-reader', {
+      detail: { projectPath, manuscriptPath: file.path },
+    }))
+  }
 
   const fetchIncompleteDeletions = useCallback(async (projectSession: ProjectSessionContext) => {
     const requestId = ++deletionLoadSequence.current
@@ -288,9 +308,18 @@ export default function ManuscriptGroup({ files, projectPath }: { files: Manuscr
         <PenTool size={14} style={{ color: 'var(--color-text-muted)' }} />
         <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>{text('正文章节', 'Manuscript chapters')}</span>
         {chapterFiles.length > 0 && (
-          <span className="ml-auto text-[0.7rem]" style={{ color: 'var(--color-text-muted)' }}>
-            {text(`${chapterFiles.length} 章`, `${chapterFiles.length} chapters`)}
-          </span>
+          <>
+            <span className="ml-auto text-[0.7rem]" style={{ color: 'var(--color-text-muted)' }}>
+              {text(`${chapterFiles.length} 章`, `${chapterFiles.length} chapters`)}
+            </span>
+            <button type="button" className="flex items-center gap-1 rounded border px-2 py-0.5 text-xs"
+              data-testid="ssr-reader-resume"
+              title="Mở trình đọc tại chương đang đọc dở"
+              style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+              onClick={e => { e.stopPropagation(); if (resumeFile) void openForReading(resumeFile) }}>
+              <BookOpen size={13}/> {lastReadFile ? 'Đọc tiếp' : 'Đọc truyện'}
+            </button>
+          </>
         )}
       </div>
       {open && (
