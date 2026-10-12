@@ -1,5 +1,7 @@
 # SSR-viet-truyen: PR #13 Restore & Reader qualification — 2026-10-12
 
+**Reader completion update:** This record was superseded for Reader UX and multi-chapter acceptance by [READER_COMPLETION_ACCEPTANCE_2026-10-13.md](READER_COMPLETION_ACCEPTANCE_2026-10-13.md). Restore validation below remains applicable.
+
 ## Scope and isolation
 
 - Device: **nghia only**, personal laptop.

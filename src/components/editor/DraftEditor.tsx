@@ -8,7 +8,8 @@ import { useWorkflowStore } from '../../stores/workflow-store'
 import { useLocaleStore } from '../../stores/locale-store'
 import CodeMirrorEditor from './CodeMirrorEditor'
 import ManuscriptReader from './ManuscriptReader'
-import { readerAdjacentChapters } from './reader-navigation'
+import { readerFinalizedChapters } from './reader-navigation'
+import { readerIdentity } from './reader-library'
 import { BookOpen, Pencil } from 'lucide-react'
 import ThreeWayMerge from './ThreeWayMerge'
 import { Button } from '../ui/Button'
@@ -102,21 +103,39 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
   const [readerMode, setReaderMode] = useState(() => {
     try { return sessionStorage.getItem(`ssr.reader.mode:${projectKey}`) === '1' } catch { return false }
   })
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ projectPath: string; manuscriptPath: string }>).detail
+      if (detail?.projectPath === projectKey && detail.manuscriptPath === filePath) {
+        setReaderMode(true)
+      }
+    }
+    window.addEventListener('ssr:open-reader', handler)
+    return () => window.removeEventListener('ssr:open-reader', handler)
+  }, [projectKey, filePath])
   const toggleReaderMode = () => setReaderMode(value => {
     const next = !value
     try { sessionStorage.setItem(`ssr.reader.mode:${projectKey}`, next ? '1' : '0') } catch { /* local only */ }
     return next
   })
-  const { previous: previousChapter, next: nextChapter } = readerAdjacentChapters(
-    draftsByChapter, draftsDataProjectKey === projectKey, filePath,
-  )
-  const navigateReaderChapter = (draftId: number, chapterNumber: number, chapterTitle: string) => {
+  const finalizedChapters = readerFinalizedChapters(draftsByChapter, draftsDataProjectKey === projectKey)
+  const readerChapters = finalizedChapters.map(draft => ({
+    draftId: draft.id, chapterNumber: draft.chapterNumber, title: draft.chapterTitle ?? '',
+  }))
+  const navigateReaderChapter = async (chapter: { draftId: number; chapterNumber: number; title: string }) => {
     const session = captureProjectSession(useProjectStore.getState().currentProject)
     if (!session || !isProjectSessionPath(session, projectKey)) return
-    void import('../panels/sidebar/sidebar-file-openers').then(({ openChapterFile }) => {
-      if (!isProjectSessionCurrent(session)) return
-      void openChapterFile(`vela://manuscript/${draftId}`, `Chương ${chapterNumber} ${chapterTitle}`)
-    })
+    const { openChapterFile } = await import('../panels/sidebar/sidebar-file-openers')
+    if (!isProjectSessionCurrent(session)) return
+    await openChapterFile(`vela://manuscript/${chapter.draftId}`, `Chương ${chapter.chapterNumber} ${chapter.title}`)
+    if (!isProjectSessionCurrent(session)) return
+    const editor = useEditorStore.getState()
+    // Avoid accumulating hundreds of finished chapter tabs while reading.
+    const previousTab = editor.tabs.find(tab => tab.id === tabId && tab.filePath === filePath)
+    if (previousTab?.draftStatus === 'finalized' && !previousTab.dirty && !previousTab.pinned
+        && editor.activeTabId !== tabId) {
+      editor.closeTab(tabId)
+    }
   }
 
   useEffect(() => {
@@ -885,17 +904,14 @@ function DraftEditorSession({ tabId, filePath, content, projectKey }: Props) {
       <div className="flex-1 overflow-hidden relative">
         {readerMode && isReadonly ? (
           <ManuscriptReader
+            key={filePath}
             title={meta?.chapterTitle || `Chương ${meta?.chapterNumber ?? ''}`}
             content={content}
-            identity={`${projectKey}:${filePath}`}
-            previous={previousChapter ? {
-              label: `Chương ${previousChapter.chapterNumber} ${previousChapter.chapterTitle ?? ''}`,
-              onClick: () => navigateReaderChapter(previousChapter.id, previousChapter.chapterNumber, previousChapter.chapterTitle ?? ''),
-            } : undefined}
-            next={nextChapter ? {
-              label: `Chương ${nextChapter.chapterNumber} ${nextChapter.chapterTitle ?? ''}`,
-              onClick: () => navigateReaderChapter(nextChapter.id, nextChapter.chapterNumber, nextChapter.chapterTitle ?? ''),
-            } : undefined}
+            identity={readerIdentity(projectKey, filePath)}
+            projectPath={projectKey}
+            manuscriptPath={filePath}
+            chapters={readerChapters}
+            onSelectChapter={chapter => { void navigateReaderChapter(chapter) }}
           />
         ) : (
         <CodeMirrorEditor
