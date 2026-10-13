@@ -27,6 +27,10 @@ function validatePlan(input: NarrativeThreadPlanInput): NarrativeThreadPlanInput
     || !Number.isSafeInteger(input.targetEndChapter) || input.targetEndChapter < input.targetStartChapter) {
     throw new Error('叙事线索目标章节范围无效')
   }
+  if (input.linkedStoryBibleId !== undefined && input.linkedStoryBibleId !== null
+    && (!Number.isSafeInteger(input.linkedStoryBibleId) || input.linkedStoryBibleId < 1)) {
+    throw new Error('Invalid linked Story Bible record ID')
+  }
   return { ...input, title, type, authorIntent }
 }
 
@@ -38,31 +42,57 @@ function rowToPlan(row: Record<string, unknown>): NarrativeThreadPlanRecord {
     targetStartChapter: row.target_start_chapter as number,
     targetEndChapter: row.target_end_chapter as number,
     authorIntent: row.author_intent as string,
+    linkedStoryBibleId: row.linked_story_bible_id === undefined || row.linked_story_bible_id === null
+      ? null : Number(row.linked_story_bible_id),
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   }
 }
 
+/** Author-only association. Omitted fields on legacy updates preserve the link. */
+function syncStoryBibleLink(planId: number, storyBibleId: number | null | undefined): void {
+  if (storyBibleId === undefined) return
+  const db = requireDb()
+  if (storyBibleId === null) {
+    db.prepare('DELETE FROM narrative_story_bible_links WHERE plan_id = ?').run(planId)
+    return
+  }
+  const target = db.prepare('SELECT id FROM story_bible_entries WHERE id = ?').get(storyBibleId)
+  if (!target) throw new Error('Story Bible record does not exist in this project')
+  db.prepare('INSERT INTO narrative_story_bible_links(plan_id, entry_id) VALUES (?, ?) ON CONFLICT(plan_id) DO UPDATE SET entry_id = excluded.entry_id')
+    .run(planId, storyBibleId)
+}
+const PLAN_SELECT = 'SELECT p.*, (SELECT entry_id FROM narrative_story_bible_links WHERE plan_id = p.id) AS linked_story_bible_id FROM narrative_thread_plans p'
+
 export class NarrativeThreadRepository {
   static createPlan(input: NarrativeThreadPlanInput): NarrativeThreadPlanRecord {
     const value = validatePlan(input)
-    const result = requireDb().prepare(`
+    const result = requireDb().transaction(() => {
+      const created = requireDb().prepare(`
       INSERT INTO narrative_thread_plans (
         title, type, target_start_chapter, target_end_chapter, author_intent
       ) VALUES (?, ?, ?, ?, ?)
     `).run(value.title, value.type, value.targetStartChapter, value.targetEndChapter, value.authorIntent)
+      syncStoryBibleLink(Number(created.lastInsertRowid), value.linkedStoryBibleId)
+      return created
+    })()
     return this.getPlan(Number(result.lastInsertRowid))!
   }
 
   static updatePlan(id: number, input: NarrativeThreadPlanInput): NarrativeThreadPlanRecord {
     const value = validatePlan(input)
-    const result = requireDb().prepare(`
+    const result = requireDb().transaction(() => {
+      const updated = requireDb().prepare(`
       UPDATE narrative_thread_plans
       SET title = ?, type = ?, target_start_chapter = ?, target_end_chapter = ?,
           author_intent = ?, updated_at = datetime('now')
       WHERE id = ?
     `).run(value.title, value.type, value.targetStartChapter, value.targetEndChapter, value.authorIntent, id)
-    if (result.changes !== 1) throw new Error('叙事线索计划不存在')
+      if (updated.changes !== 1) throw new Error('Narrative plan not found')
+      syncStoryBibleLink(id, value.linkedStoryBibleId)
+      return updated
+    })()
+    if (result.changes !== 1) throw new Error('Narrative plan not found')
     return this.getPlan(id)!
   }
 
@@ -72,7 +102,7 @@ export class NarrativeThreadRepository {
   }
 
   static getPlan(id: number): NarrativeThreadPlanRecord | null {
-    const row = requireDb().prepare('SELECT * FROM narrative_thread_plans WHERE id = ?')
+    const row = requireDb().prepare(`${PLAN_SELECT} WHERE p.id = ?`)
       .get(id) as Record<string, unknown> | undefined
     return row ? rowToPlan(row) : null
   }
@@ -124,7 +154,7 @@ export class NarrativeThreadRepository {
       SELECT COALESCE(MAX(chapter_number), 0) AS chapterNumber
       FROM drafts WHERE status = 'finalized'
     `).get() as { chapterNumber: number }).chapterNumber
-    const plans = db.prepare('SELECT * FROM narrative_thread_plans ORDER BY id ASC')
+    const plans = db.prepare(`${PLAN_SELECT} ORDER BY p.id ASC`)
       .all() as Record<string, unknown>[]
     return plans.map((row) => {
       const plan = rowToPlan(row)

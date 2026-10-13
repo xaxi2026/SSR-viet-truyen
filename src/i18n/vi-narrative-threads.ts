@@ -79,5 +79,14 @@ export const viNarrativeThreads: Readonly<Record<string, string>> = {
   "No event candidate with valid finalized evidence was generated. Try again.": "AI chưa tìm được sự kiện có bằng chứng hợp lệ trong chương đã chốt. Hãy thử lại.",
   "Could not save narrative thread": "Không thể lưu tuyến tình tiết",
   "Could not save finalized event": "Không thể lưu sự kiện đã chốt",
-  "Could not delete narrative thread": "Không thể xóa tuyến tình tiết"
+  "Could not delete narrative thread": "Không thể xóa tuyến tình tiết",
+  "Linked Story Bible record": "Liên kết hồ sơ cốt truyện",
+  "No Story Bible link": "Không liên kết",
+  "For author organization only. Private truths are never automatically sent to writing AI.": "Chỉ dùng để tác giả quản lý; bí mật riêng không tự động gửi cho AI viết truyện.",
+  "Linked Story Bible": "Hồ sơ cốt truyện liên kết",
+  "Record unavailable": "Không tìm thấy hồ sơ",
+  "Open Story Bible": "Mở hồ sơ cốt truyện",
+  "Clue setup": "Chương gieo",
+  "Earliest reveal": "Tiết lộ sớm nhất",
+  "Payoff markers": "Mốc giải đáp"
 }

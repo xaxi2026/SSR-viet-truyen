@@ -51,6 +51,7 @@ import { toast } from '../ui/Toast'
 import { openBuiltinEditor, openChapterFile } from '../panels/sidebar/sidebar-file-openers'
 import PlotTreeView from './PlotTreeView'
 import StoryBibleEditor from './StoryBibleEditor'
+import type { StoryBibleEntry } from '../../shared/story-bible'
 
 const EMPTY_PLAN: NarrativeThreadPlanInput = {
   title: '', type: '', targetStartChapter: 1, targetEndChapter: 1, authorIntent: '',
@@ -198,6 +199,7 @@ export default function NarrativeThreadEditor({
   const loadedModels = useLLMStore(s => s.loaded)
   const loadModels = useLLMStore(s => s.loadModels)
   const [threads, setThreads] = useState<NarrativeThreadView[]>([])
+  const [storyBibleEntries, setStoryBibleEntries] = useState<StoryBibleEntry[]>([])
   const [finalizedDrafts, setFinalizedDrafts] = useState<DatabaseChannels['db:draft-list-all']['return']>([])
   const [blueprints, setBlueprints] = useState<DatabaseChannels['db:blueprint-get-all']['return']>([])
   const [plan, setPlan] = useState<NarrativeThreadPlanInput>(EMPTY_PLAN)
@@ -261,15 +263,17 @@ export default function NarrativeThreadEditor({
     const session = captureProjectSession(useProjectStore.getState().currentProject)
     if (!session || !isProjectSessionPath(session, projectKey)) return
     try {
-      const [nextThreads, drafts, nextBlueprints] = await Promise.all([
+      const [nextThreads, drafts, nextBlueprints, nextStoryBibleEntries] = await Promise.all([
         ipc.invokeWithProjectSession(session, 'db:narrative-thread-list', projectKey),
         ipc.invokeWithProjectSession(session, 'db:draft-list-all', projectKey),
         ipc.invokeWithProjectSession(session, 'db:blueprint-get-all', projectKey),
+        ipc.invokeWithProjectSession(session, 'db:story-bible-list', projectKey),
       ])
       if (!isProjectSessionCurrent(session)) return
       const finalized = drafts.filter(draft => draft.status === 'finalized')
       setFinalizedDrafts(finalized)
       setThreads(nextThreads)
+      setStoryBibleEntries(nextStoryBibleEntries)
       setBlueprints(nextBlueprints)
       setEventDraftId(previous => previous || finalized[0]?.id || 0)
       setAiBlueprintChapter(previous => previous || nextBlueprints[0]?.chapterNumber || 0)
@@ -302,7 +306,7 @@ export default function NarrativeThreadEditor({
   }, [projectKey, text])
 
   useEffect(() => {
-    if (view === 'plans') queueMicrotask(() => { void reload() })
+    if (view === 'plans' || view === 'plot-tree') queueMicrotask(() => { void reload() })
   }, [reload, currentProject?.sessionLease, view])
 
   useEffect(() => {
@@ -723,6 +727,7 @@ export default function NarrativeThreadEditor({
             onGenerate={() => void refreshPlotTree()}
             onClear={() => void clearPlotTree()}
             onOpenSource={openPlotSource}
+            linkedPlanIds={threads.filter(thread => thread.linkedStoryBibleId != null).map(thread => thread.id)}
           />
         ) : view === 'story-bible' ? (
           <StoryBibleEditor projectKey={projectKey} />
@@ -745,6 +750,20 @@ export default function NarrativeThreadEditor({
             <label><Label>{text('预计回收 / 结束章', 'Expected payoff / end chapter')}</Label><Input type="number" min={1} value={plan.targetEndChapter} onChange={event => setPlan({ ...plan, targetEndChapter: Number(event.target.value) })} /></label>
           </div>
           <label><Label>{text('作者意图 / 理由', 'Author intent / rationale')}</Label><Textarea value={plan.authorIntent} onChange={event => setPlan({ ...plan, authorIntent: event.target.value })} /></label>
+          <label className="block">
+            <Label>{text('关联作者私有档案', 'Linked Story Bible record')}</Label>
+            <NativeSelect value={plan.linkedStoryBibleId ?? ''} onChange={event => setPlan({
+              ...plan, linkedStoryBibleId: event.target.value ? Number(event.target.value) : null,
+            })}>
+              <option value="">{text('不关联', 'No Story Bible link')}</option>
+              {storyBibleEntries.map(entry => (
+                <option key={entry.id} value={entry.id}>{entry.title}</option>
+              ))}
+            </NativeSelect>
+            <p className="mt-1 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+              {text('只供作者整理资料；私有真相不会自动发送给写作 AI。', 'For author organization only. Private truths are never automatically sent to writing AI.')}
+            </p>
+          </label>
           <Button onClick={() => void savePlan()} disabled={busy || !plan.title.trim() || !plan.type.trim() || !plan.authorIntent.trim() || plan.targetEndChapter < plan.targetStartChapter}>{text('保存计划', 'Save plan')}</Button>
         </section>
 
@@ -766,6 +785,18 @@ export default function NarrativeThreadEditor({
               </div>
               <span className="text-xs rounded px-2 py-1" style={{ background: 'var(--color-bg)' }}>{text(...STATUS_LABELS[thread.status])}</span>
             </div>
+            {thread.linkedStoryBibleId != null && (
+              <div className="flex items-center flex-wrap gap-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                <span>{text('关联作者档案', 'Linked Story Bible')}: {storyBibleEntries.find(entry => entry.id === thread.linkedStoryBibleId)?.title ?? text('记录已失效', 'Record unavailable')}</span>
+                {storyBibleEntries.filter(entry => entry.id === thread.linkedStoryBibleId).map(entry => (
+                  <span key={entry.id}>
+                    {text('伏笔首次出现', 'Clue setup')}: {entry.setupChapter} · {text('最早揭示', 'Earliest reveal')}: {entry.revealChapter}
+                    {entry.payoffChapters.length > 0 ? ' · ' + text('回收节点', 'Payoff markers') + ': ' + entry.payoffChapters.join(', ') : ''}
+                  </span>
+                ))}
+                <Button variant="outline" size="sm" onClick={() => setView('story-bible')}>{text('打开作者档案', 'Open Story Bible')}</Button>
+              </div>
+            )}
             <p className="text-sm">{thread.authorIntent}</p>
             {thread.status !== 'resolved' && thread.status !== 'abandoned' && (
               <div className="flex gap-3 text-xs" style={{ color: 'var(--color-text-muted)' }}>
@@ -780,7 +811,7 @@ export default function NarrativeThreadEditor({
               {thread.events.map(event => <div key={event.id} className="text-xs flex gap-2"><CheckCircle2 size={13} /><span>{text(`第${event.chapterNumber}章`, `Chapter ${event.chapterNumber}`)} · {text(...STATUS_LABELS[event.type])} · {event.evidence}</span></div>)}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => { setEditingId(thread.id); setPlan({ title: thread.title, type: thread.type, targetStartChapter: thread.targetStartChapter, targetEndChapter: thread.targetEndChapter, authorIntent: thread.authorIntent }) }}><Pencil size={13} />{text('编辑', 'Edit')}</Button>
+              <Button variant="outline" size="sm" onClick={() => { setEditingId(thread.id); setPlan({ title: thread.title, type: thread.type, targetStartChapter: thread.targetStartChapter, targetEndChapter: thread.targetEndChapter, authorIntent: thread.authorIntent, linkedStoryBibleId: thread.linkedStoryBibleId ?? null }) }}><Pencil size={13} />{text('编辑', 'Edit')}</Button>
               <Button variant="outline" size="sm" onClick={() => { setEventPlanId(thread.id); setEventError('') }} disabled={finalizedDrafts.length === 0}>{text('确认定稿事件', 'Confirm finalized event')}</Button>
               <Button variant="ghost" size="sm" onClick={() => void deletePlan(thread.id)}><Trash2 size={13} />{text('删除', 'Delete')}</Button>
             </div>

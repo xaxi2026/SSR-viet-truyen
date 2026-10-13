@@ -430,6 +430,17 @@ function createTables(db: BetterSqlite3.Database, importSourceSecret?: Buffer) {
     );
     CREATE INDEX IF NOT EXISTS idx_story_bible_chapter ON story_bible_entries(setup_chapter,reveal_chapter);
 
+    -- Author-confirmed link. One Story Bible entry may relate to multiple narrative plans.
+    -- Deleting a Bible record unlinks plans but never deletes plans or events.
+    CREATE TABLE IF NOT EXISTS narrative_story_bible_links (
+      plan_id INTEGER PRIMARY KEY,
+      entry_id INTEGER NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (plan_id) REFERENCES narrative_thread_plans(id) ON DELETE CASCADE,
+      FOREIGN KEY (entry_id) REFERENCES story_bible_entries(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_narrative_story_bible_entry ON narrative_story_bible_links(entry_id);
+
     -- 索引
     CREATE INDEX IF NOT EXISTS idx_llm_calls_time ON llm_calls(created_at);
 
