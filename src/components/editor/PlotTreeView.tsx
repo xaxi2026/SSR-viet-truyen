@@ -29,6 +29,8 @@ interface PlotTreeViewProps {
   onGenerate: () => void
   onClear: () => void
   onOpenSource: (source: PlotTreeSourceReference) => void
+  /** IDs only; private Story Bible contents never enter the generated plot tree. */
+  linkedPlanIds?: readonly number[]
 }
 
 function sourceLabel(source: PlotTreeSourceReference, text: (zh: string, en: string) => string): string {
@@ -55,6 +57,7 @@ export default function PlotTreeView({
   onGenerate,
   onClear,
   onOpenSource,
+  linkedPlanIds = [],
 }: PlotTreeViewProps) {
   const text = useLocaleStore(state => state.text)
   const viewportRef = useRef<HTMLDivElement>(null)
@@ -247,6 +250,9 @@ export default function PlotTreeView({
             {selectedEvent.sources.map((source, index) => (
               <Button key={`${source.type}:${index}`} size="sm" variant="outline" onClick={() => onOpenSource(source)}>
                 <ExternalLink size={12} />{sourceLabel(source, text)}
+                {source.type === 'narrative-thread' && linkedPlanIds.includes(source.planId) && (
+                  <span className="ml-1 text-[10px] opacity-75">↔ {text('关联作者档案', 'Linked Story Bible')}</span>
+                )}
               </Button>
             ))}
           </div>

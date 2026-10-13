@@ -21,6 +21,8 @@ export interface NarrativeThreadPlanInput {
   targetStartChapter: number
   targetEndChapter: number
   authorIntent: string
+  /** Optional author-approved link; private Bible text is never included in prompts. */
+  linkedStoryBibleId?: number | null
 }
 
 export interface NarrativeThreadEventInput {
