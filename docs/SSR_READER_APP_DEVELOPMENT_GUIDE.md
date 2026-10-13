@@ -12,7 +12,7 @@
 
 ### M0 — Khởi động đúng repo và xác thực thông tin
 
-1. Đọc `AGENTS.md`, `CHATGPT_START_HERE.md`, tài liệu này, `docs/SSR_READER_APP_ARCHITECTURE.md`, `docs/READER_COMPLETION_ACCEPTANCE_2026-10-13.md` và Issue #20 qua GitHub.
+1. Đọc `SSR_READER_START_HERE.md`, tài liệu này, `docs/SSR_READER_APP_ARCHITECTURE.md` và Issue #20 trên **nhánh tài liệu Reader**. Sau đó đọc `AGENTS.md`, `CHATGPT_START_HERE.md` và `docs/READER_COMPLETION_ACCEPTANCE_2026-10-13.md` **trên nhánh PR #13 hoặc #19**: các tệp này chưa có trong `master` tại ngày viết.
 2. Đọc thực tế `src/components/editor/ManuscriptReader.tsx`, `reader-library.ts`, `reader-navigation.ts`, `src/components/dialogs/ExportDialog.tsx`, `src/services/export-service.ts`, `electron/services/manuscript-publisher.ts`, finalization repository/service; lấy **commit SHA**, không suy đoán theo tài liệu cũ.
 3. Xác minh repo/branch/PR cụ thể và các thay đổi local chưa push trước khi lấy; GitHub source không chứa dữ liệu truyện.
 4. Hỏi/ghi quyết định về phân phối khi cần: PWA trước hay Android APK trước, sách chỉ để cá nhân hay công khai, nơi lưu file release. **Không chặn M0/M1 chỉ vì chưa chọn App Store.**
@@ -115,11 +115,11 @@ Trong mỗi phiên ChatGPT cần nói rõ:
 
 ## E. Mẫu tin nhắn để mở chat mới
 
-> Tiếp tục dự án **SSR Reader — ứng dụng đọc truyện riêng cho điện thoại**, Issue #20 của `xaxi2026/SSR-viet-truyen`. Hãy đọc `AGENTS.md`, `docs/SSR_READER_APP_ARCHITECTURE.md` và `docs/SSR_READER_APP_DEVELOPMENT_GUIDE.md` trên nhánh tài liệu Reader hiện hành, rồi kiểm tra các PR #13/#18/#19 liên quan. Mục tiêu: độc giả chỉ đọc các chương tôi chủ động công bố, không thấy Hồ sơ cốt truyện, dàn ý, manh mối hay bản nháp; ưu tiên PWA và Android. Báo cáo giai đoạn thực tế, lập kế hoạch từng PR và triển khai trên nhánh riêng. Không động `test-1`, truyện thật, dữ liệu máy công ty nếu tôi chưa cho phép, không tự xuất bản sách và không tự merge.
+> Tiếp tục dự án **SSR Reader — ứng dụng đọc truyện riêng cho điện thoại**, Issue #20 của `xaxi2026/SSR-viet-truyen`. Hãy đọc `SSR_READER_START_HERE.md`, `docs/SSR_READER_APP_ARCHITECTURE.md` và `docs/SSR_READER_APP_DEVELOPMENT_GUIDE.md` trên nhánh tài liệu Reader hiện hành, rồi kiểm tra `AGENTS.md` và các PR #13/#18/#19 trên đúng nhánh. Mục tiêu: độc giả chỉ đọc các chương tôi chủ động công bố, không thấy Hồ sơ cốt truyện, dàn ý, manh mối hay bản nháp; ưu tiên PWA và Android. Báo cáo giai đoạn thực tế, lập kế hoạch từng PR và triển khai trên nhánh riêng. Không động `test-1`, truyện thật, dữ liệu máy công ty nếu tôi chưa cho phép, không tự xuất bản sách và không tự merge.
 
 ## F. Tài liệu bổ sung
 
 - [Đặc tả ứng dụng SSR Reader](SSR_READER_APP_ARCHITECTURE.md)
 - [Bằng chứng màn hình Reader Writer hiện có](READER_COMPLETION_ACCEPTANCE_2026-10-13.md)
-- [Quy tắc ứng dụng hiện hành](../AGENTS.md)
+- [Quy tắc Writer trên nhánh PR #19](https://github.com/xaxi2026/SSR-viet-truyen/blob/feat/linked-foreshadowing-tracks-20261013/AGENTS.md) — không có trên master ngày viết
 - [Issue công việc](https://github.com/xaxi2026/SSR-viet-truyen/issues/20)
