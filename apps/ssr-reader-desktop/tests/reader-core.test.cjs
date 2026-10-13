@@ -54,3 +54,8 @@ test('handles 500 synthetic chapters without lexical 10-before-2 ordering',()=>{
  assert.equal(result.length,500)
  assert.deepEqual(result.map(x=>x.number),Array.from({length:500},(_,i)=>i+1))
 })
+
+test('imported TXT chapter titles do not repeat the chapter number',()=>{
+  const prepared=prepareChapterFiles(['Chương 2 - Ngọc bội.txt','第10章 Thân thế.txt','Chapter 20 - The Return.txt'])
+  assert.deepEqual(prepared.map(ch=>ch.title),['Ngọc bội','Thân thế','The Return'])
+})

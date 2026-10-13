@@ -3,67 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>SSR Reader — Đọc truyện</title>
   <link rel="stylesheet" href="./styles.css">
   <script src="./reader.js" defer></script>
 </head>
-<body data-theme="paper">
-  <div class="app">
-    <header class="topbar">
-      <div class="brand"><span class="brand-icon">S</span><div><strong>SSR Reader</strong><small>Ứng dụng đọc truyện riêng · chỉ dành cho văn bản đã chọn</small></div></div>
-      <div class="importbar">
-        <input id="bookName" type="text" maxlength="100" placeholder="Tên sách muốn nhập" aria-label="Tên sách">
-        <button id="importBtn" class="primary" type="button">+ Nhập chương TXT</button>
-      </div>
-    </header>
-    <main class="workspace">
-      <aside class="books panel">
-        <div class="section-title"><span>📚 Tủ sách</span><span id="bookCount" class="count">0</span></div>
-        <div id="bookList" class="listing" aria-label="Danh sách sách"></div>
-        <div class="privacy">Chọn thủ công các tệp <b>.txt</b> muốn đọc. Ứng dụng chỉ nhập những tệp bạn chọn; không mở dự án viết truyện, bản nháp hoặc hồ sơ cốt truyện.</div>
-      </aside>
-      <aside class="chapters panel">
-        <div class="section-title"><span>☷ Mục lục</span><span id="chapterCount" class="count">0</span></div>
-        <input id="tocSearch" class="full-input" type="search" placeholder="Tìm tên hoặc số chương" aria-label="Tìm chương">
-        <div id="chapterList" class="listing" aria-label="Danh sách chương"></div>
-      </aside>
-      <section class="reading panel" aria-label="Nội dung truyện">
-        <div class="toolbar">
-          <div class="novel-title" id="readerTitle">Chào mừng đến với SSR Reader</div>
-          <div class="tools">
-            <button id="prevBtn" title="Chương trước" disabled>← Trước</button>
-            <button id="nextBtn" title="Chương sau" disabled>Sau →</button>
-            <span class="separator"></span>
-            <button id="fontMinusBtn" title="Giảm cỡ chữ">A−</button>
-            <span id="fontLabel" class="tiny">20px</span>
-            <button id="fontPlusBtn" title="Tăng cỡ chữ">A+</button>
-            <select id="themeSelect" aria-label="Giao diện đọc">
-              <option value="paper">Giấy trắng</option>
-              <option value="sepia">Giấy vàng</option>
-              <option value="night">Ban đêm</option>
-            </select>
+<body data-theme="night">
+<div class="app">
+  <div class="window-drag" aria-hidden="true"><span>◆ &nbsp; SSR READER <span class="drag-subtitle">/ THƯ VIỆN ĐỌC TRUYỆN</span></span></div>
+  <header class="topbar">
+    <div class="brand"><div class="brand-icon">S</div><div><strong>SSR Reader</strong><small>Tủ sách đọc riêng · Không chứa dữ liệu sáng tác</small></div></div>
+    <div class="importbar">
+      <input id="bookName" type="text" maxlength="100" placeholder="Tên sách muốn nhập" aria-label="Tên sách">
+      <button id="importBtn" class="primary" type="button">＋ Nhập chương TXT</button>
+    </div>
+  </header>
+  <main class="workspace" id="workspace">
+    <aside class="books panel" id="bookShelf">
+      <div class="section-title"><span>◫ &nbsp;Tủ sách</span><span id="bookCount" class="count">0</span></div>
+      <div id="bookList" class="listing" aria-label="Danh sách sách"></div>
+      <div class="privacy"><span class="privacy-icon">◈</span><span>Thư viện đọc được lưu riêng trên máy này. Chỉ các chương TXT bạn chọn mới được nhập. Không mở dàn ý hay Hồ sơ cốt truyện.</span></div>
+    </aside>
+    <section class="reader-shell panel" id="readerShell" aria-label="Ứng dụng đọc truyện">
+      <header class="reader-toolbar">
+        <span id="readerTitle" class="novel-title" title="Sách đang đọc">◩ &nbsp; Đọc truyện</span>
+        <div class="tools" role="toolbar" aria-label="Công cụ đọc truyện">
+          <button id="prevBtn" title="Chương trước (Alt+←)" disabled>‹ <span>Trước</span></button>
+          <button id="nextBtn" title="Chương sau (Alt+→)" disabled><span>Sau</span> ›</button>
+          <span class="separator"></span>
+          <button id="tocBtn" class="tool-tab active" data-panel="contents" aria-pressed="true">☷ <span>Mục lục</span></button>
+          <button id="searchBtn" class="tool-tab" data-panel="search" aria-pressed="false">⌕ <span>Tìm</span></button>
+          <button id="bookmarkBtn" type="button" title="Đánh dấu vị trí hiện tại" disabled>☆</button>
+          <button id="bookmarksBtn" class="tool-tab" data-panel="bookmarks" aria-pressed="false">♧ <span>Đã lưu</span> <span id="bookmarkBadge">0</span></button>
+          <button id="settingsBtn" class="tool-tab" data-panel="settings" aria-pressed="false">⚙ <span>Hiển thị</span></button>
+          <button id="focusBtn" type="button" title="Chế độ tập trung">⛶</button>
+        </div>
+      </header>
+      <div class="reading-body">
+        <aside id="readerPanel" class="reader-panel" data-panel="contents" aria-label="Bảng điều khiển đọc truyện">
+          <div class="panel-header"><strong id="panelTitle">Mục lục</strong><button id="closePanelBtn" type="button" aria-label="Đóng bảng">×</button></div>
+          <div id="contentsPanel" class="panel-view">
+            <input id="tocSearch" type="search" placeholder="Tên hoặc số chương…" aria-label="Tìm chương">
+            <div class="panel-meta"><span>Chương trong sách</span><span id="chapterCount" class="count">0</span></div>
+            <div id="chapterList" class="listing" aria-label="Danh sách chương"></div>
+          </div>
+          <div id="searchPanel" class="panel-view" hidden>
+            <input id="chapterSearch" type="search" placeholder="Từ khóa trong chương…" aria-label="Tìm trong chương">
+            <div class="panel-meta"><span id="matchCount">Nhập từ khóa để tìm đoạn văn.</span></div>
+            <button id="nextMatchBtn" class="wide-action" type="button">Đi tới kết quả tiếp theo →</button>
+            <div id="matchList" class="listing"></div>
+          </div>
+          <div id="bookmarksPanel" class="panel-view" hidden>
+            <button id="addBookmarkBtn" class="wide-action" type="button" disabled>☆ Đánh dấu tại vị trí hiện tại</button>
+            <div class="panel-meta"><span>Các vị trí đã lưu trong chương</span></div>
+            <select id="bookmarkJump" aria-label="Đến dấu trang" disabled><option value="">Chọn vị trí đã đánh dấu</option></select>
+            <div id="bookmarkList" class="listing"></div>
+          </div>
+          <div id="settingsPanel" class="panel-view" hidden>
+            <div class="setting"><label for="fontRange">Cỡ chữ <b id="fontLabel">20px</b></label><div class="range-row"><button id="fontMinusBtn">A−</button><input id="fontRange" type="range" min="14" max="34" step="2" value="20" aria-label="Cỡ chữ"><button id="fontPlusBtn">A+</button></div></div>
+            <div class="setting"><label for="lineHeightRange">Giãn dòng <b id="lineHeightLabel">2.0</b></label><input id="lineHeightRange" type="range" min="1.4" max="2.4" step="0.1" value="2" aria-label="Giãn dòng"></div>
+            <div class="setting"><label for="themeSelect">Màu nền trang đọc</label><select id="themeSelect"><option value="night">Ban đêm</option><option value="paper">Giấy trắng</option><option value="sepia">Giấy vàng</option></select></div>
+            <div class="setting"><label for="widthSelect">Độ rộng trang</label><select id="widthSelect"><option value="narrow">Hẹp</option><option value="regular">Vừa</option><option value="wide">Rộng</option></select></div>
+            <p class="settings-note">Cài đặt chỉ lưu trên máy, không thay đổi nội dung truyện.</p>
+            <button id="removeBookBtn" class="danger-action" type="button" disabled>Xóa sách khỏi tủ sách</button>
+          </div>
+        </aside>
+        <div id="chapterSurface" class="page-scroll" role="region" aria-label="Nội dung truyện">
+          <article id="chapterText" class="paper-content"><div class="welcome">
+            <span class="welcome-icon">◈</span>
+            <h1>Không còn lộ cốt truyện ✨</h1>
+            <p>Ứng dụng đọc riêng biệt đã sẵn sàng. Nhập các chương TXT bạn muốn đọc để bắt đầu.</p>
+            <p>Mục lục, đánh dấu, tìm kiếm, hiển thị và chế độ tập trung được thiết kế theo phần đọc truyện trong SSR-viet-truyen.</p>
+          </div></article>
+          <div id="chapterEnd" class="chapter-end" hidden>
+            <button id="bottomPrevBtn" type="button" disabled>‹ Chương trước</button>
+            <span>✦ &nbsp; Hết chương &nbsp; ✦</span>
+            <button id="bottomNextBtn" type="button" disabled>Chương tiếp ›</button>
           </div>
         </div>
-        <div class="searchtools">
-          <input id="chapterSearch" type="search" placeholder="Tìm trong chương đang đọc…" aria-label="Tìm trong chương">
-          <button id="nextMatchBtn" type="button">Tìm tiếp</button>
-          <span id="matchCount" class="tiny" role="status"></span>
-          <div class="spacer"></div>
-          <button id="bookmarkBtn" type="button" disabled>☆ Đánh dấu</button>
-          <select id="bookmarkJump" aria-label="Đến dấu trang" disabled><option value="">Dấu trang đã lưu</option></select>
-          <button id="removeBookBtn" type="button" title="Xóa sách đã nhập khỏi tủ sách" disabled>Xóa sách</button>
-        </div>
-        <div id="chapterSurface" class="page-scroll">
-          <article id="chapterText" class="paper-content"><div class="welcome">
-            <h1>Không còn lộ cốt truyện ✨</h1>
-            <p>Đây là ứng dụng đọc riêng biệt. Hãy đặt tên sách và chọn một hoặc nhiều tệp TXT mà bạn chủ động muốn nhập.</p>
-            <p>Sách nhập sẽ nằm trong thư viện riêng của Reader trên máy này, không thay đổi nội dung SSR-viet-truyen.</p>
-          </div></article>
-        </div>
-        <footer class="statusbar"><span id="status">Sẵn sàng · đọc offline</span><span id="position">0%</span></footer>
-      </section>
-    </main>
-  </div>
+      </div>
+      <footer class="statusbar">
+        <div class="statusline"><span id="status">Sẵn sàng · Đọc offline</span><span class="shortcut">Alt + ← / → chuyển chương</span><span id="position">0%</span></div>
+        <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+      </footer>
+    </section>
+  </main>
+</div>
 </body>
 </html>

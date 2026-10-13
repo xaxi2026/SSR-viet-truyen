@@ -19,7 +19,8 @@ function chapterNumber(fileName) {
   return number && Number.isSafeInteger(number) && number <= 99999 ? number : null
 }
 function cleanChapterTitle(fileName) {
-  return path.basename(fileName).replace(/\.txt$/i, '').trim().slice(0, 140) || 'Chương chưa có tên'
+  const stem = path.basename(fileName).replace(/\.txt$/i,'').trim()
+  return stem.replace(/^(?:(?:chương|chapter)\s*\d+\s*[-:.·_]?\s*|第\s*\d+\s*章\s*[-:.·_]?\s*|\d+\s*[-:.·_]\s*)/iu,'').trim().slice(0,140)
 }
 function prepareChapterFiles(files) {
   if (!Array.isArray(files) || files.length < 1 || files.length > MAX_CHAPTERS) {

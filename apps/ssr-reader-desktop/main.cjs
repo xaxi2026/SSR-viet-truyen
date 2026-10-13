@@ -1,5 +1,5 @@
 'use strict'
-const { app, BrowserWindow, dialog, ipcMain } = require('electron')
+const { app, BrowserWindow, dialog, ipcMain, Menu, nativeTheme } = require('electron')
 const fs = require('node:fs')
 const path = require('node:path')
 const { randomUUID } = require('node:crypto')
@@ -7,6 +7,8 @@ const { safeId, bookTitle, prepareChapterFiles, safePlainText,
   MAX_CHAPTER_BYTES, MAX_IMPORT_BYTES, normalizeProgress } = require('./reader-core.cjs')
 
 app.setName('SSR Reader')
+nativeTheme.themeSource='dark'
+Menu.setApplicationMenu(null)
 // Test-only storage override: never run automated cases against the user's library.
 if (process.env.SSR_READER_E2E_HOME) {
   const os = require('node:os')
@@ -117,6 +119,8 @@ function createWindow() {
   readerWindow=new BrowserWindow({
     width:1220,height:820,minWidth:720,minHeight:510,
     show:false,title:'SSR Reader — Đọc truyện',
+    titleBarStyle:'hidden',
+    titleBarOverlay:{color:'#151a21',symbolColor:'#e4e7ee',height:34},
     backgroundColor:'#f6f3ec',
     webPreferences:{
       preload:path.join(__dirname,'preload.cjs'),

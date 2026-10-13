@@ -55,3 +55,15 @@ node tests/reader-e2e.cjs
 Tài liệu quyết định lâu dài: `SSR_READER_START_HERE.md`, `docs/SSR_READER_APP_ARCHITECTURE.md`, `docs/SSR_READER_APP_DEVELOPMENT_GUIDE.md` trong PR tài liệu #21, và Issue #20. Chi tiết triển khai tại PR Windows Reader riêng.
 
 **Không merge GitHub, không đụng `test-1`, không sửa Kaspersky hay bản Writer đang chạy.**
+
+## Cập nhật giao diện 13/10/2026 — đồng bộ với Đọc truyện trong SSR Writer
+
+- Toàn bộ ứng dụng Reader chuyển sang **giao diện tối đồng bộ**: khung cửa sổ Windows, Tủ sách, Mục lục, thanh công cụ, các bảng điều khiển, thanh trạng thái và nội dung đọc. **Mặc định Ban đêm**; khi tác giả chọn giấy trắng/vàng, chỉ trang đọc đổi màu còn khung ứng dụng vẫn tối.
+- Tận dụng cách bố trí và hành vi từ `src/components/editor/ManuscriptReader.tsx` của Writer: thanh công cụ Trước/Sau, **Mục lục**, **Tìm**, **Đánh dấu**, **Đã lưu**, **Hiển thị**, **Chế độ tập trung**; bảng phụ đóng/mở; điều khiển ở cuối chương; thanh tiến độ.
+- Cài đặt riêng cho thiết bị: cỡ chữ **14–34px**, giãn dòng **1.4–2.4**, độ rộng trang **hẹp/vừa/rộng**, nền trang **đêm/trắng/vàng**.
+- Loại tiêu đề chương lặp từ tên tệp khi nhập: ví dụ `Chương 2 - Ngọc bội.txt` sẽ hiển thị `Chương 2 · Ngọc bội`; nếu bản TXT bắt đầu bằng một dòng tiêu đề chương trùng số, Reader ẩn dòng trùng **khi hiển thị** mà không sửa văn bản gốc.
+- Vẫn giữ kiến trúc riêng, **không nhúng Reader trở lại ứng dụng viết** và không cấp quyền vào SQLite/dàn ý/bản thảo của Writer.
+
+**Kiểm thử bổ sung:** 10/10 Node unit tests, Electron/Playwright E2E kiểm tra các lớp giao diện tối, bảng tìm/đánh dấu/hiển thị, chuyển chế độ tập trung, lưu chương/giá trị cài đặt qua khởi động lại. Ảnh chụp thử dùng chương **giả lập**, không chứa truyện thật.
+
+**Thao tác thử nghiệm:** Mở lại `SSR Reader - Doc truyen (Pilot)` trên Desktop để tải mã giao diện mới. Không cần cài lại SSR Writer hoặc thay đổi `test-1`. Đây vẫn là **portable pilot**, chưa phải bản installer Windows phát hành công khai.
