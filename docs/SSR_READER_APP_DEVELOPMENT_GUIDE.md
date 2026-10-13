@@ -1,5 +1,8 @@
 # Hướng dẫn cho ChatGPT và lập trình viên — SSR Reader (ứng dụng đọc truyện riêng)
 
+
+> **ƯU TIÊN CẬP NHẬT 13/10/2026 — QUYẾT ĐỊNH CỦA TÁC GIẢ:** triển khai **ứng dụng SSR Reader riêng trên Windows trước**, nghiệm thu rồi **quay lại sản xuất truyện**. **PWA/Android/iPhone chuyển sang giai đoạn sau**. Các đoạn nhắc “PWA trước” bên dưới chỉ là phương án nghiên cứu cũ, **không còn là thứ tự triển khai**. Giai đoạn Windows cho phép **nhập TXT được tác giả chọn thủ công để đọc riêng trên máy**, không được quảng bá là xuất bản/publication. Khi cần chia sẻ cho độc giả mới phát triển Safe Release Exporter theo hợp đồng SSRBook v1.
+
 > **BẮT ĐẦU Ở ĐÂY khi phát triển ứng dụng đọc truyện cho độc giả.** Đây là chỉ dẫn triển khai, không phải bằng chứng app/PWA/APK đã ra mắt.  
 > Nguồn sự thật: [Issue #20](https://github.com/xaxi2026/SSR-viet-truyen/issues/20) và [Đặc tả kiến trúc](SSR_READER_APP_ARCHITECTURE.md).  
 > Mã Writer hiện lưu ở [xaxi2026/SSR-viet-truyen](https://github.com/xaxi2026/SSR-viet-truyen). Nhánh PR #13, #18, #19 là nguồn tham khảo **chưa merge**; kiểm tra commit thật khi làm.
