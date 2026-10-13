@@ -19,7 +19,7 @@ describe('Vietnamese plot-tree and narrative-thread UI', () => {
   it.each(['NarrativeThreadEditor.tsx', 'PlotTreeView.tsx'])(
     'has Vietnamese coverage for literal text() labels in %s', (name) => {
       const source = readFileSync(new URL(`../../components/editor/${name}`, import.meta.url), 'utf8')
-      const textPairs = [...source.matchAll(/\\btext\\(\\s*'([^']*)'\\s*,\\s*'([^']*)'/g)]
+      const textPairs = [...source.matchAll(/\btext\(\s*'([^']*)'\s*,\s*'([^']*)'/g)]
       expect(textPairs.length).toBeGreaterThan(10)
       const untranslated = textPairs
         .map((match) => match[2])
