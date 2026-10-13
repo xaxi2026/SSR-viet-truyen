@@ -5,7 +5,17 @@ import { viInline } from './vi-inline'
 import { viSettings } from './vi-settings'
 import { viNovelConfig } from './vi-novel-config'
 import { viStoryBible } from './vi-story-bible'
+import { viNarrativeThreads } from './vi-narrative-threads'
 import { viWorkflowExtra } from './vi-workflow-extra'
+import { viWorkflowReviewed } from './vi-workflow-reviewed'
+import { viWorkflowReviewed2 } from './vi-workflow-reviewed2'
+import { viWorkflowReviewed3 } from './vi-workflow-reviewed3'
+import { viWorkflowReviewed4 } from './vi-workflow-reviewed4'
+import { viWorkflowReviewed5 } from './vi-workflow-reviewed5'
+import { viWorkflowFinal } from './vi-workflow-final'
+import { localizeVietnameseDynamicUi } from './vi-ui-patterns'
+import { localizeVietnameseDynamicUiExtra } from './vi-ui-patterns-extra'
+import { localizeVietnameseCriticalUi } from './vi-ui-patterns-critical'
 import type { Locale, MessageParams } from './types'
 
 type Catalog = Record<string, string>
@@ -47,7 +57,7 @@ export function localize(
 ): string {
   const template = locale === 'zh-CN'
     ? zhCNText
-    : locale === 'vi-VN' ? (viNovelConfig[enUSText] ?? viSettings[enUSText] ?? viStoryBible[enUSText] ?? viWorkflowExtra[enUSText] ?? viInline[enUSText] ?? enUSText) : enUSText
+    : locale === 'vi-VN' ? (viNovelConfig[enUSText] ?? viSettings[enUSText] ?? viStoryBible[enUSText] ?? viNarrativeThreads[enUSText] ?? viWorkflowExtra[enUSText] ?? viWorkflowReviewed[enUSText] ?? viWorkflowReviewed2[enUSText] ?? viWorkflowReviewed3[enUSText] ?? viWorkflowReviewed4[enUSText] ?? viWorkflowReviewed5[enUSText] ?? viWorkflowFinal[enUSText] ?? viInline[enUSText] ?? localizeVietnameseDynamicUi(enUSText) ?? localizeVietnameseDynamicUiExtra(enUSText) ?? localizeVietnameseCriticalUi(enUSText) ?? enUSText) : enUSText
   return interpolate(template, params)
 }
 
