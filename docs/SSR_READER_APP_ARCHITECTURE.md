@@ -1,5 +1,8 @@
 # SSR Reader — Thiết kế tách ứng dụng đọc truyện khỏi SSR-viet-truyen
 
+
+> **ƯU TIÊN CẬP NHẬT 13/10/2026 — QUYẾT ĐỊNH CỦA TÁC GIẢ:** triển khai **ứng dụng SSR Reader riêng trên Windows trước**, nghiệm thu rồi **quay lại sản xuất truyện**. **PWA/Android/iPhone chuyển sang giai đoạn sau**. Các đoạn nhắc “PWA trước” bên dưới chỉ là phương án nghiên cứu cũ, **không còn là thứ tự triển khai**. Giai đoạn Windows cho phép **nhập TXT được tác giả chọn thủ công để đọc riêng trên máy**, không được quảng bá là xuất bản/publication. Khi cần chia sẻ cho độc giả mới phát triển Safe Release Exporter theo hợp đồng SSRBook v1.
+
 > **Trạng thái 13/10/2026: ĐẶC TẢ / KẾ HOẠCH, CHƯA CÓ APP ĐỌC ĐỘC LẬP, CHƯA CÓ APK.**  
 > Epic: [Issue #20](https://github.com/xaxi2026/SSR-viet-truyen/issues/20). Các bản Pilot liên quan: [PR #13](https://github.com/xaxi2026/SSR-viet-truyen/pull/13), [PR #18](https://github.com/xaxi2026/SSR-viet-truyen/pull/18), [PR #19](https://github.com/xaxi2026/SSR-viet-truyen/pull/19); chưa mặc định đã merge.  
 > Tên sản phẩm đề xuất: **SSR Đọc Truyện / SSR Reader**. Ứng dụng này dành cho độc giả, **không phải** phiên bản thu nhỏ của app tác giả.
