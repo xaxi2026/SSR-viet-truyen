@@ -51,6 +51,7 @@ import { toast } from '../ui/Toast'
 import { openBuiltinEditor, openChapterFile } from '../panels/sidebar/sidebar-file-openers'
 import PlotTreeView from './PlotTreeView'
 import StoryBibleEditor from './StoryBibleEditor'
+import StoryContinuityImportDialog from '../dialogs/StoryContinuityImportDialog'
 import type { StoryBibleEntry } from '../../shared/story-bible'
 
 const EMPTY_PLAN: NarrativeThreadPlanInput = {
@@ -220,6 +221,7 @@ export default function NarrativeThreadEditor({
   const [aiBusy, setAiBusy] = useState(false)
   const [aiError, setAiError] = useState('')
   const [view, setView] = useState<'plot-tree' | 'plans' | 'story-bible'>(initialView)
+  const [showImport, setShowImport] = useState(false)
   const [plotSources, setPlotSources] = useState<PlotTreeSourceBundle | null>(null)
   const [plotModelId, setPlotModelId] = useState<string | null>(null)
   const [plotBusy, setPlotBusy] = useState(false)
@@ -680,6 +682,7 @@ export default function NarrativeThreadEditor({
       <div className="mx-auto max-w-5xl space-y-5">
         <header className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">{useLocaleStore.getState().locale === 'vi-VN' ? 'Hồ sơ cốt truyện' : text('剧情树与叙事线索', 'Story Bible & narrative threads')}</h2>
+          <Button size="sm" variant="outline" onClick={() => setShowImport(true)}>Nhập đề xuất ChatGPT (7/13/8)</Button>
           <div className="flex gap-2" role="tablist" aria-label={text('剧情编辑器视图', 'Plot editor views')}>
             <Button
               size="sm"
@@ -710,6 +713,12 @@ export default function NarrativeThreadEditor({
             </Button>
           </div>
         </header>
+        <StoryContinuityImportDialog
+          isOpen={showImport}
+          projectPath={projectKey}
+          onClose={() => setShowImport(false)}
+          onImported={() => void reload()}
+        />
 
         {view === 'plot-tree' ? (
           <PlotTreeView
