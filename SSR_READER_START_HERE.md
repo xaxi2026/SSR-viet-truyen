@@ -1,5 +1,8 @@
 # SSR Reader — Bắt đầu phát triển ứng dụng đọc truyện độc lập
 
+
+> **ƯU TIÊN CẬP NHẬT 13/10/2026 — QUYẾT ĐỊNH CỦA TÁC GIẢ:** triển khai **ứng dụng SSR Reader riêng trên Windows trước**, nghiệm thu rồi **quay lại sản xuất truyện**. **PWA/Android/iPhone chuyển sang giai đoạn sau**. Các đoạn nhắc “PWA trước” bên dưới chỉ là phương án nghiên cứu cũ, **không còn là thứ tự triển khai**. Giai đoạn Windows cho phép **nhập TXT được tác giả chọn thủ công để đọc riêng trên máy**, không được quảng bá là xuất bản/publication. Khi cần chia sẻ cho độc giả mới phát triển Safe Release Exporter theo hợp đồng SSRBook v1.
+
 **Trạng thái (13/10/2026): mới có thiết kế + Issue, CHƯA CÓ ứng dụng Reader độc lập, APK hoặc bản phát hành.**
 
 Ứng dụng Writer để **sáng tác và giữ bí mật**. Ứng dụng SSR Reader để **đọc các chương được tác giả tự chọn công bố**, có thể dùng trên điện thoại. Hai sản phẩm **không được chia sẻ kho SQLite/.vela, IPC writer, dàn ý hoặc thông tin AI**.
@@ -18,9 +21,9 @@ Các tài liệu/bản tính năng liên quan hiện trên các **PR nháp chưa
 
 ## Mốc làm việc
 
-- **M1 Writer:** xuất gói độc giả từ **finalized + tác giả chọn công bố + preview xác nhận đúng hash**; xuất riêng, không tái dùng Export hiện tại có `includeOutline`.
-- **M2 Reader:** app web/PWA độc lập, tủ sách, nhập file, offline, mục lục, dấu trang, chỉnh cỡ chữ, tìm kiếm; không biết dữ liệu tác giả.
-- **M3 Android:** đóng gói APK thử nghiệm riêng; kiểm thử máy thật và file import.
-- **M4 iPhone:** cài PWA từ trình duyệt trước; native sau khi có môi trường ký và phân phối.
+- **D2 Writer sau Windows:** xuất gói độc giả từ **finalized + tác giả chọn công bố + preview xác nhận đúng hash**; xuất riêng, không tái dùng Export hiện tại có `includeOutline`.
+- **D0/D1 Windows Reader độc lập:** app web/PWA độc lập, tủ sách, nhập file, offline, mục lục, dấu trang, chỉnh cỡ chữ, tìm kiếm; không biết dữ liệu tác giả.
+- **M3 Android (để sau viết truyện):** đóng gói APK thử nghiệm riêng; kiểm thử máy thật và file import.
+- **M4 iPhone (để sau viết truyện):** cài PWA từ trình duyệt trước; native sau khi có môi trường ký và phân phối.
 
 **Quan trọng:** GitHub chứa source và hướng dẫn **không chứa dữ liệu truyện riêng**. Muốn nhập sách thật để phát hành phải có thao tác công bố được chủ sở hữu chấp thuận; `finalized` riêng chưa phải `public`.
