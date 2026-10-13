@@ -26,7 +26,10 @@ D:\SSR-NGHIA\SSR-viet-truyen-story-bible-20261013  ->  D:\SSR-NGHIA\SSR-viet-tru
 D:\SSR-NGHIA\SSR- tieu thuyet  ->  D:\SSR-NGHIA\SSR-viet-truyen\Truyen\SSR-tieu-thuyet
 ```
 
-**Không được xóa các junction tương thích trong giai đoạn này.** Một số gói pnpm có đường dẫn liên kết tuyệt đối tới đường dẫn Writer trước khi di chuyển; liên kết gần đây của dự án SQLite cũng có thể dùng đường dẫn cũ. Chỉ gỡ sau khi đã thay các phụ thuộc/đường dẫn, thử lại ứng dụng và xác nhận không có dự án mất khỏi danh sách gần đây.
+**Không được xóa các junction tương thích trong giai đoạn này.**
+
+**Cập nhật theo yêu cầu chỉ hiện một thư mục:** các junction cũ được đặt thuộc tính **Hidden + System trên chính liên kết** bằng `attrib +H +S /L`, không thay thuộc tính thư mục đích. Trong File Explorer ở cấu hình thông thường, `D:\SSR-NGHIA` chỉ còn hiện `SSR-viet-truyen`. Nếu Explorer còn hiển thị danh sách cũ, nhấn **F5**; khi bật hiển thị các tệp hệ thống, các liên kết có thể lại hiện ra. Đây **không phải xóa vật lý**: hơn **5.000 junction của pnpm** trong hai cây `node_modules` còn tham chiếu đường dẫn cũ; xóa vật lý trước khi sửa/tái tạo liên kết và regression test sẽ làm Writer không chạy. Không dùng `Remove-Item -Recurse` qua junction; việc bỏ alias hẳn phải thực hiện trong đợt bảo trì riêng.
+ Một số gói pnpm có đường dẫn liên kết tuyệt đối tới đường dẫn Writer trước khi di chuyển; liên kết gần đây của dự án SQLite cũng có thể dùng đường dẫn cũ. Chỉ gỡ sau khi đã thay các phụ thuộc/đường dẫn, thử lại ứng dụng và xác nhận không có dự án mất khỏi danh sách gần đây.
 
 ## Kiểm tra đã thực hiện, không suy diễn quá mức
 
