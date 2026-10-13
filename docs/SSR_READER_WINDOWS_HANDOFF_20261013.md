@@ -50,3 +50,15 @@ Khi user nói **"tiếp tục sản xuất truyện"**:
 - Reader Windows chưa có **an toàn phát hành công khai**; không share TXT hoặc repo như thể là bộ xuất bản truyện hoàn chỉnh.
 
 Các tài liệu nền: [hướng dẫn mới cho ChatGPT](../SSR_READER_START_HERE.md), [kiến trúc Reader](SSR_READER_APP_ARCHITECTURE.md), [kế hoạch dài hạn](SSR_READER_APP_DEVELOPMENT_GUIDE.md).
+
+## Nâng cấp giao diện tối và đồng bộ Reader Writer (13/10/2026)
+
+Theo ảnh nghiệm thu ban đầu, UI Reader cũ bị **khung trắng / trang đọc đen** không đồng bộ. Đã thực hiện tại [PR nháp #22](https://github.com/xaxi2026/SSR-viet-truyen/pull/22), commit `0aca82848e4be6650ac163d81b2a671aeee30182`:
+
+- **SSR Reader Windows dùng giao diện tối hoàn toàn**, kể cả thanh tiêu đề Windows, Tủ sách, Mục lục, các tab điều khiển, thanh công cụ và chân trang. Đọc đêm dùng palette `#1b2029 / #e4e7ee` giống `ManuscriptReader.tsx` trong SSR Writer.
+- Bố cục/phím đọc dựa trên Writer: **Trước, Sau, Mục lục, Tìm, Đánh dấu, Đã lưu, Hiển thị, Chế độ tập trung**, bảng phụ đóng/mở, chuyển chương dưới bài, thanh tiến độ.
+- Có đủ cỡ chữ, giãn dòng, khổ trang, nền đêm/trắng/vàng; **nền khung ứng dụng vẫn tối** khi đổi màu trang đọc. Tự lưu và nhớ chương cuối.
+- Sửa tiêu đề TXT lặp `Chương n · Chương n`, chỉ loại bỏ tiêu đề trùng **khi hiển thị**, không thay nội dung file TXT gốc.
+- Bằng chứng: **10/10 unit tests PASS**; **Playwright Electron E2E PASS** với chương giả lập, kiểm tra năm vùng giao diện đều có màu tối, bookmarks, search, focus, settings, resume. Bản portable trên VCC-PHUONG23 đã khởi động lại với cửa sổ phản hồi.
+
+**Tình trạng:** đã cập nhật bản Pilot và GitHub; vẫn **chưa** là bản installer phát hành chính thức/chưa nghiệm thu trực quan lần cuối từ tác giả. Không merge tự động. Sau khi tác giả xác nhận, quay lại tiếp tục sản xuất truyện; ứng dụng điện thoại sau.
