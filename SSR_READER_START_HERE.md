@@ -9,7 +9,9 @@
 
 ## Tài liệu chính trên GitHub
 
-- [Issue #20 — Reader độc lập cho điện thoại](https://github.com/xaxi2026/SSR-viet-truyen/issues/20)
+- [Windows Reader Pilot: tình trạng, nghiệm thu và quay lại viết truyện](docs/SSR_READER_WINDOWS_HANDOFF_20261013.md).
+- [PR #22: mã nguồn SSR Reader Windows độc lập](https://github.com/xaxi2026/SSR-viet-truyen/pull/22).
+- [Issue #20 — Reader Windows trước, mobile sau](https://github.com/xaxi2026/SSR-viet-truyen/issues/20)
 - [Đặc tả kiến trúc, bảo mật và SSRBook v1](docs/SSR_READER_APP_ARCHITECTURE.md)
 - [Hướng dẫn triển khai + cách mở chat mới](docs/SSR_READER_APP_DEVELOPMENT_GUIDE.md)
 
