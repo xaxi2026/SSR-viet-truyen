@@ -4,6 +4,17 @@
 
 [`handoffs/2026-09-05-astra-code-review.md`](handoffs/2026-09-05-astra-code-review.md) 是固定到提交 `7ea4d96` 的历史审查快照，记录当时的比较基线、实现提交、两批开发历史、Bug 台账、真实验收和审查顺序；后续审查必须以当前分支代码和测试为准，不能把该快照或其他 README、ADR、旧 handoff 单独当作当前行为证据。
 
+## SSR Reader — ứng dụng đọc truyện riêng cho điện thoại
+
+- [Bắt đầu tại SSR_READER_START_HERE.md](../SSR_READER_START_HERE.md) — hướng dẫn mở ChatGPT mới để làm Reader.
+- [Nghiệm thu Windows Reader Pilot và thứ tự quay lại viết truyện](SSR_READER_WINDOWS_HANDOFF_20261013.md).
+- [Thư mục Windows sau khi gom một nơi, trạng thái Git và lối tắt](LOCAL_WINDOWS_LAYOUT_20261013.md).
+- [Đặc tả Reader, bảo mật và gói công bố](SSR_READER_APP_ARCHITECTURE.md).
+- [Hướng dẫn triển khai / kiểm thử](SSR_READER_APP_DEVELOPMENT_GUIDE.md).
+- [Issue #20](https://github.com/xaxi2026/SSR-viet-truyen/issues/20).
+
+**Hiện chỉ là thiết kế và kế hoạch.** App đọc riêng/PWA/APK chưa được xây dựng; tài liệu phân biệt rõ code đã có trong Reader của app viết (PR #13) với app dành cho độc giả.
+
 ## 文档权威层级
 
 | 文档 | 用途 | 权威与生命周期 |
