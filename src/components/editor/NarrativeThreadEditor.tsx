@@ -50,6 +50,7 @@ import { Textarea } from '../ui/Textarea'
 import { toast } from '../ui/Toast'
 import { openBuiltinEditor, openChapterFile } from '../panels/sidebar/sidebar-file-openers'
 import PlotTreeView from './PlotTreeView'
+import StoryBibleEditor from './StoryBibleEditor'
 
 const EMPTY_PLAN: NarrativeThreadPlanInput = {
   title: '', type: '', targetStartChapter: 1, targetEndChapter: 1, authorIntent: '',
@@ -216,7 +217,7 @@ export default function NarrativeThreadEditor({
   const [eventCandidates, setEventCandidates] = useState<BoundEventCandidate[]>([])
   const [aiBusy, setAiBusy] = useState(false)
   const [aiError, setAiError] = useState('')
-  const [view, setView] = useState<'plot-tree' | 'plans'>(initialView)
+  const [view, setView] = useState<'plot-tree' | 'plans' | 'story-bible'>(initialView)
   const [plotSources, setPlotSources] = useState<PlotTreeSourceBundle | null>(null)
   const [plotModelId, setPlotModelId] = useState<string | null>(null)
   const [plotBusy, setPlotBusy] = useState(false)
@@ -674,7 +675,7 @@ export default function NarrativeThreadEditor({
     <div className="h-full overflow-y-auto p-5" style={{ color: 'var(--color-text)' }}>
       <div className="mx-auto max-w-5xl space-y-5">
         <header className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold">{text('剧情树与叙事线索', 'Plot tree & narrative threads')}</h2>
+          <h2 className="text-lg font-semibold">{useLocaleStore.getState().locale === 'vi-VN' ? 'Hồ sơ cốt truyện' : text('剧情树与叙事线索', 'Story Bible & narrative threads')}</h2>
           <div className="flex gap-2" role="tablist" aria-label={text('剧情编辑器视图', 'Plot editor views')}>
             <Button
               size="sm"
@@ -693,6 +694,15 @@ export default function NarrativeThreadEditor({
               onClick={() => setView('plans')}
             >
               {text('计划清单', 'Plan list')}
+            </Button>
+            <Button
+              size="sm"
+              variant={view === 'story-bible' ? 'default' : 'outline'}
+              role="tab"
+              aria-selected={view === 'story-bible'}
+              onClick={() => setView('story-bible')}
+            >
+              {useLocaleStore.getState().locale === 'vi-VN' ? 'Hồ sơ cốt truyện' : text('作者档案', 'Story Bible')}
             </Button>
           </div>
         </header>
@@ -714,6 +724,8 @@ export default function NarrativeThreadEditor({
             onClear={() => void clearPlotTree()}
             onOpenSource={openPlotSource}
           />
+        ) : view === 'story-bible' ? (
+          <StoryBibleEditor projectKey={projectKey} />
         ) : <>
         <div className="flex items-start justify-between gap-3">
           <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>

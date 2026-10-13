@@ -55,6 +55,7 @@ import { LLMHistoryRepository } from '../repositories/llm-repository'
 import { SummaryRepository } from '../repositories/summary-repository'
 import { ConsistencyExemptionRepository } from '../repositories/consistency-exemption-repository'
 import { NarrativeThreadRepository } from '../repositories/narrative-thread-repository'
+import { StoryBibleRepository } from '../repositories/story-bible-repository'
 import { PlotTreeRepository } from '../repositories/plot-tree-repository'
 import { isPlotTreeSourceRevision } from '../../src/shared/plot-tree'
 import { RecoveryCandidateRepository } from '../repositories/recovery-candidate-repository'
@@ -110,6 +111,8 @@ const MUTATING_DATABASE_CHANNELS = new Set([
   'db:post-process-mark-step-failed',
   'db:log-llm-call',
   'db:save-summary-snapshot',
+  'db:story-bible-save',
+  'db:story-bible-delete',
   'db:narrative-thread-plan-create',
   'db:narrative-thread-plan-update',
   'db:narrative-thread-plan-delete',
@@ -750,6 +753,22 @@ export function registerDatabaseController() {
     } catch (error) {
       return { success: false, error: String(error) }
     }
+  })
+
+  ipcMain.handle('db:story-bible-list', async (_event, expectedProjectPath: string) => {
+    assertRequiredExpectedProjectPath(getCurrentProjectPath(), expectedProjectPath)
+    return StoryBibleRepository.list()
+  })
+
+  ipcMain.handle('db:story-bible-save', async (_event, input, id: number | null, expectedProjectPath: string) => {
+    assertRequiredExpectedProjectPath(getCurrentProjectPath(), expectedProjectPath)
+    return { success: true, entry: StoryBibleRepository.save(input, id ?? undefined) }
+  })
+
+  ipcMain.handle('db:story-bible-delete', async (_event, id: number, expectedProjectPath: string) => {
+    assertRequiredExpectedProjectPath(getCurrentProjectPath(), expectedProjectPath)
+    StoryBibleRepository.remove(id)
+    return { success: true }
   })
 
   ipcMain.handle('db:narrative-thread-list', async (_event, expectedProjectPath: string) => {

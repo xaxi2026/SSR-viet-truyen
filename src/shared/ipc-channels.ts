@@ -37,6 +37,7 @@ import type {
   NarrativeThreadView,
 } from './narrative-thread'
 import type { PlotTreeSnapshot, PlotTreeSourceBundle } from './plot-tree'
+import type { StoryBibleEntry, StoryBibleEntryInput } from './story-bible'
 import type {
   UpdateActionResponse,
   UpdateCheckResponse,
@@ -896,6 +897,18 @@ export interface DatabaseChannels {
   }
   'db:consistency-exemption-revoke': {
     args: [stableFactKey: string, expectedProjectPath: string]
+    return: { success: boolean; error?: string }
+  }
+  'db:story-bible-list': {
+    args: [expectedProjectPath: string]
+    return: StoryBibleEntry[]
+  }
+  'db:story-bible-save': {
+    args: [input: StoryBibleEntryInput, id: number | null, expectedProjectPath: string]
+    return: { success: boolean; entry?: StoryBibleEntry; error?: string }
+  }
+  'db:story-bible-delete': {
+    args: [id: number, expectedProjectPath: string]
     return: { success: boolean; error?: string }
   }
   'db:narrative-thread-list': {
