@@ -7,6 +7,7 @@
 ## SSR Reader — ứng dụng đọc truyện riêng cho điện thoại
 
 - [Bắt đầu tại SSR_READER_START_HERE.md](../SSR_READER_START_HERE.md) — hướng dẫn mở ChatGPT mới để làm Reader.
+- [Nghiệm thu Windows Reader Pilot và thứ tự quay lại viết truyện](SSR_READER_WINDOWS_HANDOFF_20261013.md).
 - [Đặc tả Reader, bảo mật và gói công bố](SSR_READER_APP_ARCHITECTURE.md).
 - [Hướng dẫn triển khai / kiểm thử](SSR_READER_APP_DEVELOPMENT_GUIDE.md).
 - [Issue #20](https://github.com/xaxi2026/SSR-viet-truyen/issues/20).
