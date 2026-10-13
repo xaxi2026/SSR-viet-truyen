@@ -4,6 +4,7 @@ import { viVN } from './messages/vi-VN'
 import { viInline } from './vi-inline'
 import { viSettings } from './vi-settings'
 import { viNovelConfig } from './vi-novel-config'
+import { viNarrativeThreads } from './vi-narrative-threads'
 import type { Locale, MessageParams } from './types'
 
 type Catalog = Record<string, string>
@@ -45,7 +46,7 @@ export function localize(
 ): string {
   const template = locale === 'zh-CN'
     ? zhCNText
-    : locale === 'vi-VN' ? (viNovelConfig[enUSText] ?? viSettings[enUSText] ?? viInline[enUSText] ?? enUSText) : enUSText
+    : locale === 'vi-VN' ? (viNovelConfig[enUSText] ?? viSettings[enUSText] ?? viNarrativeThreads[enUSText] ?? viInline[enUSText] ?? enUSText) : enUSText
   return interpolate(template, params)
 }
 
