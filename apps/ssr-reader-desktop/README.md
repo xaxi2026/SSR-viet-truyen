@@ -12,7 +12,7 @@
 
 Trên máy công ty đã thử:
 - Lối tắt dự kiến trên Desktop: **SSR Reader - Doc truyen (Pilot)**.
-- EXE portable: `D:\SSR-NGHIA\SSR-Reader-Windows-Pilot\SSR Reader.exe`.
+- EXE portable: `D:\SSR-NGHIA\SSR-viet-truyen\Reader\SSR Reader.exe`.
 - Có thể chạy EXE này **không cần mở SSR Writer, không cần Node/npm**, miễn giữ nguyên toàn bộ thư mục portable 344 MB (gồm runtime Electron).
 - Thư viện riêng của Reader: %APPDATA%\SSR Reader\reader-library. Không sao chép hay liên kết đến dự án `.vela`.
 
@@ -38,7 +38,7 @@ Thư mục app này là sản phẩm **độc lập** trong nhánh PR Reader; kh
 
 Thử nghiệm bằng runtime Electron đã có trên máy:
 ```powershell
-$env:SSR_READER_ELECTRON_BIN = 'D:\SSR-NGHIA\SSR-Reader-Windows-Pilot\SSR Reader.exe'
+$env:SSR_READER_ELECTRON_BIN = 'D:\SSR-NGHIA\SSR-viet-truyen\Reader\SSR Reader.exe'
 $env:NODE_PATH = 'D:\SSR-NGHIA\SSR-viet-truyen-story-bible-20261013\node_modules'
 node tests/reader-core.test.cjs
 node tests/reader-e2e.cjs
@@ -67,3 +67,7 @@ Tài liệu quyết định lâu dài: `SSR_READER_START_HERE.md`, `docs/SSR_REA
 **Kiểm thử bổ sung:** 10/10 Node unit tests, Electron/Playwright E2E kiểm tra các lớp giao diện tối, bảng tìm/đánh dấu/hiển thị, chuyển chế độ tập trung, lưu chương/giá trị cài đặt qua khởi động lại. Ảnh chụp thử dùng chương **giả lập**, không chứa truyện thật.
 
 **Thao tác thử nghiệm:** Mở lại `SSR Reader - Doc truyen (Pilot)` trên Desktop để tải mã giao diện mới. Không cần cài lại SSR Writer hoặc thay đổi `test-1`. Đây vẫn là **portable pilot**, chưa phải bản installer Windows phát hành công khai.
+
+### To chuc chung tren o D
+
+Ma nguon Reader hien tai: `D:\SSR-NGHIA\SSR-viet-truyen\Reader-Source\apps\ssr-reader-desktop`. File EXE rieng nam o thu muc `Reader` ben canh. Writer hien van dang chay o thu muc cu nen chua duoc di chuyen; khong xoa Git goc/test-1 truoc khi hoan tat.
