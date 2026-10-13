@@ -411,6 +411,25 @@ function createTables(db: BetterSqlite3.Database, importSourceSecret?: Buffer) {
     CREATE INDEX IF NOT EXISTS idx_narrative_thread_confirmations_plan
       ON narrative_thread_confirmations(plan_id, draft_id, id);
 
+    CREATE TABLE IF NOT EXISTS story_bible_entries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL CHECK(category IN ('secret','clue','rule','knowledge')),
+      truth_status TEXT NOT NULL CHECK(truth_status IN ('confirmed','hypothesis','open')),
+      canonical_truth TEXT NOT NULL DEFAULT '',
+      public_hint TEXT NOT NULL DEFAULT '',
+      known_by TEXT NOT NULL DEFAULT '[]',
+      unknown_by TEXT NOT NULL DEFAULT '[]',
+      false_beliefs TEXT NOT NULL DEFAULT '',
+      setup_chapter INTEGER NOT NULL CHECK(setup_chapter > 0),
+      reveal_chapter INTEGER NOT NULL CHECK(reveal_chapter >= setup_chapter),
+      payoff_chapters TEXT NOT NULL DEFAULT '[]',
+      notes TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_story_bible_chapter ON story_bible_entries(setup_chapter,reveal_chapter);
+
     -- 索引
     CREATE INDEX IF NOT EXISTS idx_llm_calls_time ON llm_calls(created_at);
 
