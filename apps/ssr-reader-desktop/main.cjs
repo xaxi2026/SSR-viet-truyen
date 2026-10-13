@@ -69,6 +69,7 @@ function saveProgress(bookId, chapterId, data) {
   const all = progressStore()
   const current = all[bookId] && typeof all[bookId]==='object' ? all[bookId] : {}
   current[chapterId] = normalizeProgress(data)
+  current.__lastChapterId = chapterId
   all[bookId]=current
   atomicJson(positionFile(),all)
   return current[chapterId]
@@ -141,6 +142,11 @@ app.whenReady().then(()=>{
     return {text:safePlainText(data),reading:getProgress(id,chId)}
   })
   ipcMain.handle('reader:progress',(_event,id,chId,data)=>saveProgress(id,chId,data))
+  ipcMain.handle('reader:last-chapter',(_event,id)=>{
+    const book=findBook(id)
+    const last=progressStore()[id]?.__lastChapterId
+    return book.chapters.some(ch=>ch.id===last) ? last : null
+  })
   ipcMain.handle('reader:remove-book',(_event,id)=>{
     findBook(id)
     const keep=books().filter(b=>b.id!==id)

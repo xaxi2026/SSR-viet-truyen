@@ -65,7 +65,10 @@ async function openBook(id){
   state.reading={position:0,bookmarks:[]}
   renderBooks();renderChapters()
   $('removeBookBtn').disabled=!state.book
-  if(state.book?.chapters.length)await openChapter(state.book.chapters[0].id)
+  if(state.book?.chapters.length){
+    const last=await api.lastChapter(state.book.id)
+    await openChapter(last || state.book.chapters[0].id)
+  }
 }
 function scrollFraction(){
   const node=$('chapterSurface')
@@ -153,6 +156,7 @@ async function openChapter(chId){
     state.chapter=ch
     state.chapterText=result.text
     state.reading=result.reading
+    await api.saveReading(bookId,chId,state.reading)
     $('readerTitle').textContent=state.book.title+' · Chương '+ch.number
     $('bookmarkBtn').disabled=false
     $('chapterSearch').value=''

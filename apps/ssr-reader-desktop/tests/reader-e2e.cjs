@@ -46,6 +46,7 @@ async function run(){
   await page.waitForSelector('#bookCount')
   await page.locator('#bookCount').filter({hasText:'1'}).waitFor({timeout:10000})
   await page.locator('#chapterCount').filter({hasText:'3'}).waitFor()
+  assert.match(await page.locator('#readerTitle').innerText(),/Chương 2/)
   assert.equal(await page.locator('body').getAttribute('data-theme'),'night')
   await page.locator('#chapterList button').nth(1).click()
   await page.waitForTimeout(150)
