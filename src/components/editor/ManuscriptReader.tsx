@@ -8,6 +8,11 @@ import {
   readerPreferences, recordReaderProgress, removeReaderBookmark,
   saveReaderPreferences, type ReaderTheme,
 } from './reader-library'
+import {
+  getReaderLineMark, isReaderLineMarkCurrent,
+  removeReaderLineMark, saveReaderLineMark, type ReaderLineMark,
+} from './reader-line-mark'
+import { readerLineGeometry, readerOffsetFromPoint, type ReaderLineGeometry } from './reader-line-dom'
 
 export interface ReaderChapter {
   draftId: number
@@ -74,10 +79,22 @@ export default function ManuscriptReader({
   const [bookmarks, setBookmarks] = useState(() => getReaderBookmarks(identity))
   const scrollRef = useRef<HTMLDivElement>(null)
   const initialized = useRef(false)
+  const [markModeState, setMarkModeState] = useState({ identity, enabled: false })
+  const markMode = markModeState.identity === identity && markModeState.enabled
+  const [lineMarkState, setLineMarkState] = useState<{ identity: string; mark: ReaderLineMark | null }>(
+    () => ({ identity, mark: getReaderLineMark(identity) }),
+  )
+  const [markerGeometry, setMarkerGeometry] = useState<{ key: string; geometry: ReaderLineGeometry } | null>(null)
   const mainText = useMemo(() =>
     content.split(/\r?\n\s*\r?\n/).filter(Boolean)
       .map(paragraph => paragraph.replace(/^#{1,6}\s+/u, '')),
   [content])
+  const lineMark = lineMarkState.identity === identity
+    ? lineMarkState.mark : getReaderLineMark(identity)
+  const hasValidLineMark = isReaderLineMarkCurrent(lineMark, mainText)
+  const markerKey = hasValidLineMark
+    ? `${identity}:${lineMark.paragraphIndex}:${lineMark.charOffset}:${lineMark.paragraphSignature}`
+    : ''
   const currentIndex = chapters.findIndex(ch => `vela://manuscript/${ch.draftId}` === manuscriptPath)
   const previous = currentIndex > 0 ? chapters[currentIndex - 1] : null
   const next = currentIndex >= 0 && currentIndex < chapters.length - 1 ? chapters[currentIndex + 1] : null
@@ -106,6 +123,28 @@ export default function ManuscriptReader({
     })
     return () => { cancelAnimationFrame(frame); initialized.current = false }
   }, [identity, content, projectPath, manuscriptPath])
+
+  // Recalculate the exact painted line on resize, search highlighting and typography changes.
+  useEffect(() => {
+    if (!hasValidLineMark) return
+    const paragraph = scrollRef.current?.querySelector<HTMLElement>(
+      `[data-reader-paragraph="${lineMark.paragraphIndex}"]`,
+    )
+    if (!paragraph) return
+    const measure = () => {
+      const geometry = readerLineGeometry(paragraph, lineMark.charOffset)
+      setMarkerGeometry(geometry ? { key: markerKey, geometry } : null)
+    }
+    const frame = requestAnimationFrame(measure)
+    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null
+    observer?.observe(paragraph)
+    if (scrollRef.current) observer?.observe(scrollRef.current)
+    return () => {
+      cancelAnimationFrame(frame)
+      observer?.disconnect()
+    }
+  }, [hasValidLineMark, lineMark, markerKey, settings.fontSize,
+    settings.lineHeight, settings.width, focusMode, panel, textFilter, mainText])
 
   useEffect(() => {
     if (!focusMode && !panel) return
@@ -169,6 +208,37 @@ export default function ManuscriptReader({
     setPanel(null)
   }
 
+  function markAtParagraph(index: number, charOffset: number) {
+    if (!markMode || !mainText[index]) return
+    const saved = saveReaderLineMark(identity, index, charOffset, mainText[index])
+    if (!saved) return
+    setLineMarkState({ identity, mark: saved })
+    setMarkModeState({ identity, enabled: false })
+    setPanel(null)
+  }
+  function jumpToMarkedLine() {
+    if (!hasValidLineMark) return
+    setPanel(null)
+    requestAnimationFrame(() => {
+      const scroller = scrollRef.current
+      const paragraph = scroller?.querySelector<HTMLElement>(
+        `[data-reader-paragraph="${lineMark.paragraphIndex}"]`,
+      )
+      if (!scroller || !paragraph) return
+      const geometry = readerLineGeometry(paragraph, lineMark.charOffset)
+      if (!geometry) return
+      const targetY = paragraph.getBoundingClientRect().top - scroller.getBoundingClientRect().top
+        + geometry.top - Math.min(100, scroller.clientHeight / 6)
+      scroller.scrollTop += targetY
+      recordScroll()
+    })
+  }
+  function clearLineMark() {
+    removeReaderLineMark(identity)
+    setLineMarkState({ identity, mark: null })
+    setMarkerGeometry(null)
+  }
+
   const smallButton = 'flex items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs transition-colors disabled:opacity-30 disabled:cursor-not-allowed'
   const themedButton = { color: palette.foreground, borderColor: palette.border }
   return (
@@ -202,6 +272,19 @@ export default function ManuscriptReader({
         <button className={smallButton} type="button" onClick={() => changePanel('bookmarks')} aria-expanded={panel === 'bookmarks'}>
           <Bookmark size={15}/> Đã lưu ({bookmarks.length})
         </button>
+        <button className={smallButton} type="button" aria-pressed={markMode}
+          title="Bật rồi chọn một dòng trong chương"
+          onClick={() => {
+            setMarkModeState(v => ({ identity,
+              enabled: !(v.identity === identity && v.enabled) }))
+            setPanel(null)
+          }}
+          style={{ background: markMode ? palette.hovered : undefined }}>
+          <BookmarkPlus size={15}/> {markMode ? 'Hủy chọn dòng' : 'Đánh dấu dòng'}
+        </button>
+        <button className={smallButton} type="button" disabled={!hasValidLineMark}
+          title={lineMark && !hasValidLineMark ? 'Dấu cũ không còn khớp với nội dung chương' : 'Tới đúng dòng đã đánh dấu'}
+          onClick={jumpToMarkedLine}><Bookmark size={15}/> Tới dòng đã đọc</button>
         <button className={smallButton} type="button" onClick={() => changePanel('settings')} aria-expanded={panel === 'settings'}>
           <Settings2 size={15}/> Hiển thị
         </button>
@@ -211,6 +294,14 @@ export default function ManuscriptReader({
         </button>
       </header>
 
+      {markMode && <div className="shrink-0 border-b px-4 py-2 text-sm" role="status"
+        style={{ borderColor: palette.border, background: palette.hovered }}>
+        Chọn trực tiếp dòng bạn vừa đọc xong. Dấu màu vàng sẽ được lưu riêng cho chương này.
+      </div>}
+      {lineMark && !hasValidLineMark && <div className="shrink-0 border-b px-4 py-2 text-xs"
+        role="status" style={{ borderColor: palette.border, color: palette.secondary }}>
+        Dấu dòng trước đó không còn khớp với nội dung chương. Hãy đánh dấu dòng mới.
+      </div>}
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {panel && (
           <aside
@@ -253,7 +344,21 @@ export default function ManuscriptReader({
                 <button type="button" className={smallButton + ' w-full border'} style={themedButton} onClick={saveBookmark}>
                   <BookmarkPlus size={14}/> Đánh dấu tại {progress}%
                 </button>
-                {bookmarks.length === 0 && <p className="mt-4 text-xs" style={{ color: palette.secondary }}>Chưa có đánh dấu nào trong chương này.</p>}
+                <div className="mt-3 rounded border p-2 text-xs" style={{ borderColor: palette.border }}>
+                  <p className="font-semibold">Dòng đang đọc</p>
+                  {hasValidLineMark ? <>
+                    <p className="mt-1" style={{ color: palette.secondary }}>
+                      Đoạn {lineMark.paragraphIndex + 1} · đã đánh dấu riêng cho chương này
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <button type="button" className={smallButton + ' border'} style={themedButton}
+                        onClick={jumpToMarkedLine}>Tới dòng đã đọc</button>
+                      <button type="button" className={smallButton + ' border'} style={themedButton}
+                        onClick={clearLineMark}>Xóa dấu dòng</button>
+                    </div>
+                  </> : <p className="mt-1" style={{ color: palette.secondary }}>Chưa có dòng hợp lệ. Bấm “Đánh dấu dòng” trên thanh công cụ rồi chọn dòng.</p>}
+                </div>
+                {bookmarks.length === 0 && <p className="mt-4 text-xs" style={{ color: palette.secondary }}>Chưa có đánh dấu trang nào trong chương này.</p>}
                 {bookmarks.map(bookmark => (
                   <div key={bookmark.id} className="mt-3 flex items-center gap-1 rounded border p-2" style={{ borderColor: palette.border }}>
                     <button type="button" className="min-w-0 flex-1 text-left text-xs" onClick={() => jumpTo(bookmark.fraction)}>
@@ -336,11 +441,38 @@ export default function ManuscriptReader({
               fontFamily: 'var(--font-writing), Georgia, serif', color: palette.foreground,
               lineHeight: settings.lineHeight, overflowWrap: 'anywhere' }}>
             <h1 className="mb-10 text-center text-[1.25em] font-semibold leading-snug">{title}</h1>
-            {mainText.map((paragraph, index) =>
-              <p key={index} data-reader-paragraph={index} className="mb-5"
-                style={{ whiteSpace: 'pre-wrap', textIndent: '1.5em' }}>
+            {mainText.map((paragraph, index) => {
+              const selected = hasValidLineMark && lineMark.paragraphIndex === index
+              const geometry = selected && markerGeometry?.key === markerKey ? markerGeometry.geometry : null
+              return <p key={index} data-reader-paragraph={index}
+                className="relative mb-5"
+                role={markMode ? 'button' : undefined}
+                tabIndex={markMode ? 0 : undefined}
+                aria-label={markMode ? `Đánh dấu ở đoạn ${index + 1}` : undefined}
+                title={markMode ? 'Bấm vào dòng muốn đánh dấu' : undefined}
+                onClick={event => {
+                  if (markMode) markAtParagraph(index,
+                    readerOffsetFromPoint(event.currentTarget, event.clientX, event.clientY))
+                }}
+                onKeyDown={event => {
+                  if (markMode && (event.key === 'Enter' || event.key === ' ')) {
+                    event.preventDefault()
+                    markAtParagraph(index, 0)
+                  }
+                }}
+                style={{ whiteSpace: 'pre-wrap', textIndent: '1.5em',
+                  cursor: markMode ? 'crosshair' : 'text' }}>
                 {highlightText(paragraph, textFilter.trim())}
-              </p>)}
+                {geometry && <span data-testid="ssr-reader-line-marker" aria-label="Dòng đã đọc tới"
+                  className="pointer-events-none absolute inset-x-0 z-[1]"
+                  style={{ top: geometry.top, height: geometry.height,
+                    background: 'rgba(206, 159, 61, 0.17)',
+                    borderLeft: '3px solid #c7922b', textIndent: 0 }}>
+                  <span aria-hidden="true" className="absolute -left-6 top-0 font-bold"
+                    style={{ color: '#c7922b', lineHeight: `${geometry.height}px` }}>▸</span>
+                </span>}
+              </p>
+            })}
             <div className="mt-12 flex items-center justify-between gap-3 border-t pt-6 text-sm" style={{ borderColor: palette.border }}>
               <button type="button" disabled={!previous} className={smallButton} onClick={() => previous && onSelectChapter(previous)}>
                 <ChevronLeft size={16}/> Chương trước
