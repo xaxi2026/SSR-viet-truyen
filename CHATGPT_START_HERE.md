@@ -23,3 +23,12 @@ Không cần cung cấp 500 chương, nội dung truyện, thông tin đăng nh�
 3. **Truyện mới có ID và thư mục hoàn toàn riêng.** Không dùng `test-1` làm template bằng cách sao chép cơ sở dữ liệu; không lấy 500 dàn ý của truyện cũ làm nội dung truyện mới.
 4. **ChatGPT soạn đề xuất; tác giả duyệt.** Dàn ý không phải văn xuôi; bản nháp chưa phải chương chính thức; chương chính thức và ký ức truyện phải dựa trên dữ kiện đã được tác giả xác nhận.
 5. Chỉ triển khai việc người dùng yêu cầu; không tự động viết tiếp hàng chục/hàng trăm chương, không hứa chạy nền.
+
+
+---
+
+## Nếu mục tiêu là TIẾP TỤC PHÁT TRIỂN SSR READER (không phải tạo truyện mới)
+
+Đọc [SSR_READER_START_HERE.md](SSR_READER_START_HERE.md) trên nhánh tài liệu này, rồi đọc các kế hoạch và quy tắc phân quyền được liên kết ở đó. Lộ trình Reader Stage 0–3 và quyết định mới nhất **một tài khoản vừa độc giả vừa tác giả, quyền sửa theo từng tác phẩm** nằm trong docs/SSR_PRODUCT_MASTER_ROADMAP.md và docs/SSR_ACCOUNT_AUTHOR_READER_DECISIONS.md.
+
+**Cần xác minh nguồn Reader thật trên laptop nghia khi được cho phép**: tài liệu GitHub không chứa source Reader Stage 3 chưa push và không cho phép tự truy cập máy công ty, tự sửa truyện gốc, tự merge hay đưa dữ liệu riêng lên repo.
